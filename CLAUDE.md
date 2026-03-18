@@ -1,0 +1,1 @@
+CRITICAL: Never use system Python. Always use the project's uv-managed .venv (use `uv run` instead of calling `python` directly).

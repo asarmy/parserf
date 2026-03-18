@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "parserf"
+version = "0.1.0"
+description = "Library for parsing earthquake rupture forecast (ERF) datasets."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.12"
+dependencies = [
+  "numpy",
+  "pandas",
+  "geopandas",
+  "shapely",
+  "scipy",
+  "matplotlib",
+  "pyproj",
+]
+
+[project.optional-dependencies]
+examples = [
+	"jupyter",
+]
+dev = [
+	"pytest",
+	"pytest-cov",
+	"black",
+	"pre-commit",]
+	
+	[tool.setuptools]
+package-dir = {"" = "src"}
+packages = { find = { where = ["src"] } }
+include-package-data = true
+
+[tool.coverage.run]
+relative_files = true
+
+[project.urls]
+repository = "https://github.com/asarmy/parserf"
