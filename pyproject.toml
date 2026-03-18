@@ -7,35 +7,45 @@ name = "parserf"
 version = "0.1.0"
 description = "Library for parsing earthquake rupture forecast (ERF) datasets."
 readme = "README.md"
-license = { text = "Apache-2.0" }
 requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
 dependencies = [
+  "geopandas",
+  "matplotlib",
   "numpy",
   "pandas",
-  "geopandas",
-  "shapely",
-  "scipy",
-  "matplotlib",
   "pyproj",
+  "scipy",
+  "shapely",
 ]
 
 [project.optional-dependencies]
-examples = [
-	"jupyter",
-]
 dev = [
-	"pytest",
-	"pytest-cov",
-	"black",
-	"pre-commit",]
-	
-	[tool.setuptools]
-package-dir = {"" = "src"}
-packages = { find = { where = ["src"] } }
+  "pre-commit",
+  "pytest",
+  "pytest-cov",
+  "ruff",
+]
+examples = [
+  "jupyter",
+]
+
+[project.urls]
+Repository = "https://github.com/asarmy/parserf"
+
+[tool.setuptools]
 include-package-data = true
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.coverage.run]
 relative_files = true
 
-[project.urls]
-repository = "https://github.com/asarmy/parserf"
+[tool.ruff]
+line-length = 99
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
