@@ -1,7 +1,7 @@
 name,parent_id,parent_name
 Airport Lake,1,Airport Lake
 Almanor,2,Almanor
-Anacapa - Dume [2],4,Anacapa - Dume
+Anacapa - Dume [2],4,Anacapa - Dume [2]
 Anaheim,5,Anaheim
 Antelope Valley,1000,Antelope Valley
 Ash Hill,6,Ash Hill
@@ -17,7 +17,7 @@ Big Pine (east),15,Big Pine (east)
 Big Pine (west),16,Big Pine (west)
 Blackwater,17,Blackwater
 Blue Cut,18,Blue Cut
-Brawley [2],20,Brawley
+Brawley [2],20,Brawley [2]
 Breckenridge,21,Breckenridge
 Bullion Mountains,22,Bullion Mountains
 Burnt Mountain,23,Burnt Mountain
@@ -31,13 +31,13 @@ Calico - Hidalgo,26,Calico - Hidalgo
 Camp Rock,27,Camp Rock
 Canada David,28,Canada David
 Carlsbad,29,Carlsbad
-Carson Range [0],1001,Carson Range
+Carson Range [0],1001,Carson Range [0]
 Casmalia,30,Casmalia
 Cedar Mountain - Mahogany Mountain,31,Cedar Mountain - Mahogany Mountain
 Cerro Prieto,32,Cerro Prieto
 Channel Islands,33,Channel Islands
 Channel Islands (ramp),34,Channel Islands (ramp)
-Chino [2],36,Chino
+Chino [2],36,Chino [2]
 Clamshell - Sawpit,37,Clamshell - Sawpit
 Clayton,38,Clayton
 Cleghorn,39,Cleghorn
@@ -46,16 +46,16 @@ Cleghorn Pass,41,Cleghorn Pass
 Collayomi,42,Collayomi
 Compton,43,Compton
 Concord,44,Concord
-Contra Costa (Briones) [2],45,Contra Costa (Briones)
-Contra Costa (Dillon Point) [2],46,Contra Costa (Dillon Point)
+Contra Costa (Briones) [2],45,Contra Costa (Briones) [2]
+Contra Costa (Dillon Point) [2],46,Contra Costa (Dillon Point) [2]
 Contra Costa (Lafayette),47,Contra Costa (Lafayette)
-Contra Costa (Lake Chabot) [2],48,Contra Costa (Lake Chabot)
-Contra Costa (Larkey) [2],49,Contra Costa (Larkey)
-Contra Costa (Ozal - Columbus) [2],50,Contra Costa (Ozal - Columbus)
-Contra Costa (Reliez Valley) [2],51,Contra Costa (Reliez Valley)
-Contra Costa (Southampton) [2],52,Contra Costa (Southampton)
-Contra Costa (Vallejo) [2],53,Contra Costa (Vallejo)
-Coronado Bank [2],56,Coronado Bank
+Contra Costa (Lake Chabot) [2],48,Contra Costa (Lake Chabot) [2]
+Contra Costa (Larkey) [2],49,Contra Costa (Larkey) [2]
+Contra Costa (Ozal - Columbus) [2],50,Contra Costa (Ozal - Columbus) [2]
+Contra Costa (Reliez Valley) [2],51,Contra Costa (Reliez Valley) [2]
+Contra Costa (Southampton) [2],52,Contra Costa (Southampton) [2]
+Contra Costa (Vallejo) [2],53,Contra Costa (Vallejo) [2]
+Coronado Bank [2],56,Coronado Bank [2]
 Coyote Canyon,57,Coyote Canyon
 Coyote Lake,58,Coyote Lake
 Cucamonga,59,Cucamonga
@@ -102,8 +102,8 @@ Great Valley 3 (Mysterious Ridge),97,Great Valley 3 (Mysterious Ridge)
 Great Valley 3a (Dunnigan Hills),98,Great Valley 3a (Dunnigan Hills)
 Great Valley 4a (Trout Creek),99,Great Valley 4a (Trout Creek)
 Great Valley 4b (Gordon Valley),100,Great Valley 4b (Gordon Valley)
-Great Valley 5 (Pittsburg - Kirby Hills) [2],102,Great Valley 5 (Pittsburg - Kirby Hills)
-Great Valley 6 (Midland) [2],104,Great Valley 6 (Midland)
+Great Valley 5 (Pittsburg - Kirby Hills) [2],102,Great Valley 5 (Pittsburg - Kirby Hills) [2]
+Great Valley 6 (Midland) [2],104,Great Valley 6 (Midland) [2]
 Great Valley 7 (Orestimba),105,Great Valley 7 (Orestimba)
 Great Valley 8 (Quinto),106,Great Valley 8 (Quinto)
 Great Valley 9 (Laguna Seca),107,Great Valley 9 (Laguna Seca)
@@ -124,7 +124,7 @@ Hector Mine,113,Hector Mine
 Helendale - Lockhart (south),114,Helendale - Lockhart (south)
 Hilton Creek,115,Hilton Creek
 Hollywood,116,Hollywood
-Holser [2],118,Holser
+Holser [2],118,Holser [2]
 Homestead Valley,119,Homestead Valley
 Honey Lake,120,Honey Lake
 Hosgri,121,Hosgri
@@ -162,9 +162,9 @@ Los Osos,151,Los Osos
 Lost Hills,152,Lost Hills
 Ludlow,153,Ludlow
 Maacama,155,Maacama
-Mad River - Trinidad [2],156,Mad River - Trinidad
-Malibu Coast (extension) [2],159,Malibu Coast (extension)
-Malibu Coast [2],161,Malibu Coast
+Mad River - Trinidad [2],156,Mad River - Trinidad [2]
+Malibu Coast (extension) [2],159,Malibu Coast (extension) [2]
+Malibu Coast [2],161,Malibu Coast [2]
 Manix - Afton Hills,162,Manix - Afton Hills
 McLean Lake,164,McLean Lake
 Mendocino,165,Mendocino
@@ -178,22 +178,22 @@ Monte Vista - Shannon,173,Monte Vista - Shannon
 Monterey Bay - Tularcitos,174,Monterey Bay - Tularcitos
 Morales (east),175,Morales (east)
 Morales (west),176,Morales (west)
-Mount Diablo [2],179,Mount Diablo
+Mount Diablo [2],179,Mount Diablo [2]
 Nelson Lake,180,Nelson Lake
 Newport - Inglewood (offshore),181,Newport - Inglewood (offshore)
-Newport - Inglewood [2],183,Newport - Inglewood
-North Channel [2],184,North Channel
+Newport - Inglewood [2],183,Newport - Inglewood [2]
+North Channel [2],184,North Channel [2]
 North Frontal (east),185,North Frontal (east)
 North Frontal (west),186,North Frontal (west)
 North Salt Lake,187,North Salt Lake
 North Tahoe,188,North Tahoe
 Northridge,189,Northridge
 Northridge Hills,190,Northridge Hills
-Oak Ridge (offshore) [2],191,Oak Ridge (offshore)
-"Oak Ridge (offshore, extension) [2]",192,"Oak Ridge (offshore, extension)"
+Oak Ridge (offshore) [2],191,Oak Ridge (offshore) [2]
+"Oak Ridge (offshore, extension) [2]",192,"Oak Ridge (offshore, extension) [2]"
 Oak Ridge (onshore),193,Oak Ridge (onshore)
 Oceanic - West Huasna,194,Oceanic - West Huasna
-Oceanside [2],196,Oceanside
+Oceanside [2],196,Oceanside [2]
 Ortigalita (north),197,Ortigalita (north)
 Ortigalita (south),198,Ortigalita (south)
 Owens Valley,199,Owens Valley
@@ -208,20 +208,20 @@ Pilarcitos,207,Pilarcitos
 Pine Mountain,208,Pine Mountain
 Pinto Mountain,209,Pinto Mountain
 Pisgah - Bullion Mountain - Mesquite Lake,210,Pisgah - Bullion Mountain - Mesquite Lake
-Pitas Point (upper) [2],213,Pitas Point (upper)
+Pitas Point (upper) [2],213,Pitas Point (upper) [2]
 Pittville,214,Pittville
 Pleito,215,Pleito
 Point Reyes,216,Point Reyes
 Point Reyes (connector),217,Point Reyes (connector)
 Polaris,218,Polaris
-Puente Hills (Coyote Hills) [2],219,Puente Hills (Coyote Hills)
-Puente Hills (Los Angeles) [2],220,Puente Hills (Los Angeles)
-Puente Hills (Santa Fe Springs) [2],221,Puente Hills (Santa Fe Springs)
+Puente Hills (Coyote Hills) [2],219,Puente Hills (Coyote Hills) [2]
+Puente Hills (Los Angeles) [2],220,Puente Hills (Los Angeles) [2]
+Puente Hills (Santa Fe Springs) [2],221,Puente Hills (Santa Fe Springs) [2]
 Quien Sabe,223,Quien Sabe
 Raymond,224,Raymond
 Red Mountain,225,Red Mountain
 Red Pass,226,Red Pass
-Redondo Canyon [2],228,Redondo Canyon
+Redondo Canyon [2],228,Redondo Canyon [2]
 Reliz,229,Reliz
 Richfield,230,Richfield
 Rinconada,231,Rinconada
@@ -249,7 +249,7 @@ San Andreas (San Gorgonio Pass - Garnet Hill),701,San Andreas (San Gorgonio Pass
 San Andreas (Santa Cruz Mountains),711,San Andreas (Santa Cruz Mountains)
 San Cayetano,237,San Cayetano
 San Clemente,238,San Clemente
-San Diego Trough (north) [2],240,San Diego Trough (north)
+San Diego Trough (north) [2],240,San Diego Trough (north) [2]
 San Diego Trough (south),241,San Diego Trough (south)
 San Gabriel,242,San Gabriel
 San Gabriel (extension),243,San Gabriel (extension)
@@ -268,19 +268,19 @@ San Jacinto (Superstition Mountain),800,San Jacinto (Superstition Mountain)
 San Joaquin Hills,247,San Joaquin Hills
 San Jose,248,San Jose
 San Juan,249,San Juan
-San Luis Bay [2],250,San Luis Bay
-San Luis Range (extended) [2],253,San Luis Range (extended)
+San Luis Bay [2],250,San Luis Bay [2]
+San Luis Range (extended) [2],253,San Luis Range (extended) [2]
 San Luis Range (Pecho),252,San Luis Range (Pecho)
 San Pedro Basin,255,San Pedro Basin
 San Pedro Escarpment,256,San Pedro Escarpment
 San Vicente,257,San Vicente
-Santa Cruz - Catalina Ridge [2],259,Santa Cruz - Catalina Ridge
+Santa Cruz - Catalina Ridge [2],259,Santa Cruz - Catalina Ridge [2]
 Santa Cruz Island,260,Santa Cruz Island
 Santa Monica Bay,261,Santa Monica Bay
-Santa Monica [2],263,Santa Monica
+Santa Monica [2],263,Santa Monica [2]
 Santa Rosa Island,264,Santa Rosa Island
 "Santa Susana (east, connector)",265,"Santa Susana (east, connector)"
-Santa Susana [2],267,Santa Susana
+Santa Susana [2],267,Santa Susana [2]
 Santa Ynez (east),268,Santa Ynez (east)
 Santa Ynez (west),269,Santa Ynez (west)
 Santa Ynez River,270,Santa Ynez River
@@ -315,7 +315,7 @@ West Tahoe,296,West Tahoe
 White Mountains,297,White Mountains
 White Wolf,298,White Wolf
 White Wolf (extension),299,White Wolf (extension)
-Whittier [2],301,Whittier
+Whittier [2],301,Whittier [2]
 Wight Way,302,Wight Way
 Yorba Linda,303,Yorba Linda
-Zayante - Vergeles [2],305,Zayante - Vergeles
+Zayante - Vergeles [2],305,Zayante - Vergeles [2]

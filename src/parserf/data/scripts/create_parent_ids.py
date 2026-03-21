@@ -1,8 +1,10 @@
 """Extract parent fault IDs from sections.geojson files.
 
-For each sections.geojson in RawData subdirectories, extract the name and parent-id columns, derive
-a parent_name by stripping trailing bracket indices, and save as a CSV in the corresponding
-DerivedData subdirectory.
+For each fault model data directory:
+- Load sections.geojson and extract name and parent-id columns
+- Strip trailing section index suffixes like (0), (1) from name
+- Derive parent_name (same as name, preserving bracket indices like [1])
+- Save as parent_id.csv in the corresponding DerivedData subdirectory
 
 Usage
 -----
@@ -52,10 +54,8 @@ for folder in sorted(raw_dir.iterdir()):
 
     parent_ids_df = parent_ids_df.drop_duplicates()
 
-    # Derive parent_name by stripping trailing bracket index like [1], [0]
-    parent_ids_df["parent_name"] = (
-        parent_ids_df["name"].str.replace(r"\s*\[\d+\]\s*$", "", regex=True).str.strip()
-    )
+    # parent_name is the same as name (section index suffixes already stripped above)
+    parent_ids_df["parent_name"] = parent_ids_df["name"]
 
     out_dir = derived_dir / folder.name
     out_dir.mkdir(parents=True, exist_ok=True)

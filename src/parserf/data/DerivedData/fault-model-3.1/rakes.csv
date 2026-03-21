@@ -1,0 +1,312 @@
+parent_id,parent_name,min_rake,max_rake,min_rake_style,max_rake_style,pref_style
+1,Airport Lake,-132,-90,normal oblique,normal,normal
+2,Almanor,-135,-135,normal oblique,normal oblique,normal oblique
+3,Anacapa - Dume [1],35,154,reverse oblique,reverse oblique,reverse oblique
+5,Anaheim,49,104,reverse oblique,reverse,reverse oblique
+6,Ash Hill,180,180,strike-slip,strike-slip,strike-slip
+7,Baker,-177,180,strike-slip,strike-slip,strike-slip
+8,Bartlett Springs,122,180,reverse oblique,strike-slip,strike-slip
+9,Battle Creek,90,90,reverse,reverse,reverse
+10,Bear River,90,173,reverse,strike-slip,reverse
+11,Bennett Valley,177,180,strike-slip,strike-slip,strike-slip
+12,Bicycle Lake,0,0,strike-slip,strike-slip,strike-slip
+13,Big Lagoon - Bald Mountain,90,161,reverse,strike-slip,reverse
+14,Big Pine (center),50,176,reverse oblique,strike-slip,strike-slip
+15,Big Pine (east),45,179,reverse oblique,strike-slip,strike-slip
+16,Big Pine (west),76,90,reverse,reverse,reverse
+17,Blackwater,180,180,strike-slip,strike-slip,strike-slip
+18,Blue Cut,0,0,strike-slip,strike-slip,strike-slip
+19,Brawley [1],152,180,reverse oblique,strike-slip,strike-slip
+21,Breckenridge,-90,53,normal,reverse oblique,normal
+22,Bullion Mountains,180,180,strike-slip,strike-slip,strike-slip
+23,Burnt Mountain,180,180,strike-slip,strike-slip,strike-slip
+24,Butano,98,179,reverse,strike-slip,reverse oblique
+25,Cady,0,0,strike-slip,strike-slip,strike-slip
+26,Calico - Hidalgo,0,180,strike-slip,strike-slip,strike-slip
+27,Camp Rock,180,180,strike-slip,strike-slip,strike-slip
+28,Canada David,-128,-90,normal oblique,normal,normal
+29,Carlsbad,90,177,reverse,strike-slip,reverse oblique
+30,Casmalia,48,179,reverse oblique,strike-slip,strike-slip
+31,Cedar Mountain - Mahogany Mountain,-90,-90,normal,normal,normal
+32,Cerro Prieto,180,180,strike-slip,strike-slip,strike-slip
+33,Channel Islands,44,124,reverse oblique,reverse oblique,reverse
+34,Channel Islands (ramp),45,124,reverse oblique,reverse oblique,reverse
+35,Chino [1],96,179,reverse,strike-slip,reverse oblique
+37,Clamshell - Sawpit,43,151,reverse oblique,reverse oblique,reverse
+38,Clayton,111,180,reverse oblique,strike-slip,strike-slip
+39,Cleghorn,0,180,strike-slip,strike-slip,strike-slip
+40,Cleghorn Lake,180,180,strike-slip,strike-slip,strike-slip
+41,Cleghorn Pass,180,180,strike-slip,strike-slip,strike-slip
+42,Collayomi,180,180,strike-slip,strike-slip,strike-slip
+43,Compton,64,161,reverse oblique,strike-slip,reverse
+44,Concord,103,180,reverse,strike-slip,strike-slip
+47,Contra Costa (Lafayette),102,180,reverse,strike-slip,strike-slip
+54,Contra Costa (connected) [1],116,180,reverse oblique,strike-slip,strike-slip
+55,Coronado Bank [1],93,180,reverse,strike-slip,strike-slip
+57,Coyote Canyon,0,0,strike-slip,strike-slip,strike-slip
+58,Coyote Lake,0,0,strike-slip,strike-slip,strike-slip
+59,Cucamonga,34,176,reverse oblique,strike-slip,reverse oblique
+60,Cuyama (south),90,160,reverse,strike-slip,reverse
+61,Davis Creek,-90,-90,normal,normal,normal
+62,Death Valley (Black Mountains),-177,-150,strike-slip,normal oblique,normal oblique
+63,Death Valley (Fish Lake Valley),-177,-139,strike-slip,normal oblique,strike-slip
+64,Death Valley (north),-177,180,strike-slip,strike-slip,strike-slip
+65,Death Valley (south),-177,180,strike-slip,strike-slip,strike-slip
+66,Deep Springs,-90,-90,normal,normal,normal
+67,Del Valle,44,142,reverse oblique,reverse oblique,reverse
+68,Dog Valley,-74,0,normal,strike-slip,normal oblique
+69,Dry Mountain,-90,-90,normal,normal,normal
+70,Earthquake Valley (center),132,180,reverse oblique,strike-slip,strike-slip
+71,Earthquake Valley (north),130,180,reverse oblique,strike-slip,strike-slip
+72,Earthquake Valley (south),147,180,reverse oblique,strike-slip,strike-slip
+73,East Huasna,97,180,reverse,strike-slip,strike-slip
+74,Eaton Roughs,93,180,reverse,strike-slip,strike-slip
+75,Elmore Ranch,0,0,strike-slip,strike-slip,strike-slip
+76,Elysian Park (lower),41,173,reverse oblique,strike-slip,reverse oblique
+77,Elysian Park (upper),38,163,reverse oblique,strike-slip,reverse oblique
+78,Emerson - Copper Mountain,0,180,strike-slip,strike-slip,strike-slip
+79,Eureka Peak,180,180,strike-slip,strike-slip,strike-slip
+80,Fickle Hill [1],90,173,reverse,strike-slip,reverse oblique
+81,Fish Slough,-159,-90,normal oblique,normal,normal oblique
+82,Fitzhugh Creek,-90,-90,normal,normal,normal
+83,Fontana (seismicity),0,0,strike-slip,strike-slip,strike-slip
+84,Franklin,106,180,reverse,strike-slip,strike-slip
+85,Garberville - Briceland,120,180,reverse oblique,strike-slip,reverse oblique
+86,Garlic Springs,0,180,strike-slip,strike-slip,strike-slip
+87,Gillem - Big Crack,-90,-90,normal,normal,normal
+88,Goldstone Lake,180,180,strike-slip,strike-slip,strike-slip
+89,Gravel Hills - Harper Lake,180,180,strike-slip,strike-slip,strike-slip
+90,Great Valley 1,90,90,reverse,reverse,reverse
+91,Great Valley 10 (Panoche),90,90,reverse,reverse,reverse
+92,Great Valley 11,90,90,reverse,reverse,reverse
+93,Great Valley 12,90,90,reverse,reverse,reverse
+94,Great Valley 13 (Coalinga),90,90,reverse,reverse,reverse
+95,Great Valley 14 (Kettleman Hills),90,90,reverse,reverse,reverse
+96,Great Valley 2,90,90,reverse,reverse,reverse
+97,Great Valley 3 (Mysterious Ridge),90,90,reverse,reverse,reverse
+98,Great Valley 3a (Dunnigan Hills),90,90,reverse,reverse,reverse
+99,Great Valley 4a (Trout Creek),90,90,reverse,reverse,reverse
+100,Great Valley 4b (Gordon Valley),90,90,reverse,reverse,reverse
+101,Great Valley 5 (Pittsburg - Kirby Hills) [1],180,180,strike-slip,strike-slip,reverse oblique
+103,Great Valley 6 (Midland) [1],90,90,reverse,reverse,reverse
+105,Great Valley 7 (Orestimba),90,90,reverse,reverse,reverse
+106,Great Valley 8 (Quinto),90,168,reverse,strike-slip,reverse oblique
+107,Great Valley 9 (Laguna Seca),90,90,reverse,reverse,reverse
+108,Green Valley,96,180,reverse,strike-slip,strike-slip
+109,Greenville (north),103,180,reverse,strike-slip,strike-slip
+110,Greenville (south),130,180,reverse oblique,strike-slip,strike-slip
+111,Hartley Springs,-90,-90,normal,normal,normal
+112,Hat Creek - McArthur - Mayfield,-90,-90,normal,normal,normal
+113,Hector Mine,180,180,strike-slip,strike-slip,strike-slip
+114,Helendale - Lockhart (south),103,180,reverse,strike-slip,strike-slip
+115,Hilton Creek,-90,-90,normal,normal,normal
+116,Hollywood,30,155,reverse oblique,reverse oblique,reverse oblique
+117,Holser [1],50,145,reverse oblique,reverse oblique,reverse
+119,Homestead Valley,180,180,strike-slip,strike-slip,strike-slip
+120,Honey Lake,180,180,strike-slip,strike-slip,strike-slip
+121,Hosgri,88,180,reverse,strike-slip,strike-slip
+122,Hosgri (extension),167,180,strike-slip,strike-slip,strike-slip
+123,Hunter Mountain - Saline Valley,-150,-120,normal oblique,normal oblique,normal oblique
+124,Hunting Creek - Bartlett Springs (connector),143,180,reverse oblique,strike-slip,strike-slip
+125,Hunting Creek - Berryessa,120,180,reverse oblique,strike-slip,strike-slip
+126,Imperial,161,180,strike-slip,strike-slip,strike-slip
+127,Independence,-140,-90,normal oblique,normal,normal
+128,Jess Valley,-90,-90,normal,normal,normal
+129,Johnson Valley (north),180,180,strike-slip,strike-slip,strike-slip
+130,Joshua Tree (seismicity),180,180,strike-slip,strike-slip,strike-slip
+131,Keddie Ridge,-135,-100,normal oblique,normal,normal oblique
+132,Kern Canyon (Lake Isabella),-90,40,normal,reverse oblique,normal
+133,Kern Canyon (north),-90,-62,normal,normal oblique,normal
+134,Kern Canyon (south),-90,-25,normal,normal oblique,normal
+135,Kickapoo,180,180,strike-slip,strike-slip,strike-slip
+136,King Range,90,178,reverse,strike-slip,reverse oblique
+137,La Panza,135,178,reverse oblique,strike-slip,reverse oblique
+138,Laguna Salada,-128,180,normal oblique,strike-slip,strike-slip
+139,Lake Isabella (seismicity),-85,0,normal,strike-slip,normal oblique
+140,Las Positas,45,45,reverse oblique,reverse oblique,reverse oblique
+141,Last Chance,-90,-49,normal,normal oblique,normal oblique
+142,Lenwood - Lockhart - Old Woman Springs,156,180,reverse oblique,strike-slip,strike-slip
+143,Likely,180,180,strike-slip,strike-slip,strike-slip
+144,Lions Head,65,179,reverse oblique,strike-slip,strike-slip
+145,Little Lake,-156,180,normal oblique,strike-slip,normal oblique
+146,Little Salmon (offshore),90,90,reverse,reverse,reverse
+147,Little Salmon (onshore),90,90,reverse,reverse,reverse
+148,Los Alamos,38,163,reverse oblique,strike-slip,reverse
+149,Los Alamos (extension),23,149,reverse oblique,reverse oblique,reverse
+150,Los Medanos - Roe Island,90,172,reverse,strike-slip,reverse oblique
+151,Los Osos,90,178,reverse,strike-slip,reverse oblique
+152,Lost Hills,90,90,reverse,reverse,reverse
+153,Ludlow,180,180,strike-slip,strike-slip,strike-slip
+154,"Lytle Creek (San Jacinto, connector)",0,180,strike-slip,strike-slip,strike-slip
+155,Maacama,178,180,strike-slip,strike-slip,strike-slip
+157,Mad River [1],90,173,reverse,strike-slip,reverse oblique
+158,Malibu Coast (extension) [1],30,159,reverse oblique,reverse oblique,reverse oblique
+160,Malibu Coast [1],30,163,reverse oblique,strike-slip,reverse oblique
+162,Manix - Afton Hills,0,180,strike-slip,strike-slip,strike-slip
+163,McKinleyville [1],90,174,reverse,strike-slip,reverse oblique
+164,McLean Lake,0,0,strike-slip,strike-slip,strike-slip
+165,Mendocino,100,180,reverse,strike-slip,strike-slip
+166,"Mill Creek (San Andreas, north branch)",0,180,strike-slip,strike-slip,strike-slip
+167,Mission (connected),161,180,strike-slip,strike-slip,strike-slip
+168,Mission Creek,0,180,strike-slip,strike-slip,reverse oblique
+169,Mission Hills,70,146,reverse,reverse oblique,reverse
+170,Mission Ridge - Arroyo Parida - Santa Ana,47,125,reverse oblique,reverse oblique,reverse
+171,Mohawk Valley,180,180,strike-slip,strike-slip,strike-slip
+172,Mono Lake,-90,-90,normal,normal,normal
+173,Monte Vista - Shannon,90,179,reverse,strike-slip,reverse oblique
+174,Monterey Bay - Tularcitos,150,179,reverse oblique,strike-slip,strike-slip
+175,Morales (east),90,179,reverse,strike-slip,reverse oblique
+176,Morales (west),90,179,reverse,strike-slip,reverse oblique
+177,Mount Diablo (north) [1],90,174,reverse,strike-slip,reverse oblique
+178,Mount Diablo (south) [1],90,170,reverse,strike-slip,reverse oblique
+180,Nelson Lake,0,0,strike-slip,strike-slip,strike-slip
+181,Newport - Inglewood (offshore),96,180,reverse,strike-slip,strike-slip
+182,Newport - Inglewood [1],70,180,reverse,strike-slip,strike-slip
+185,North Frontal (east),78,165,reverse,strike-slip,reverse oblique
+186,North Frontal (west),57,90,reverse oblique,reverse,reverse
+187,North Salt Lake,33,90,reverse oblique,reverse,reverse oblique
+188,North Tahoe,-90,-90,normal,normal,normal
+189,Northridge,46,137,reverse oblique,reverse oblique,reverse
+190,Northridge Hills,63,145,reverse oblique,reverse oblique,reverse
+193,Oak Ridge (onshore),55,133,reverse oblique,reverse oblique,reverse
+194,Oceanic - West Huasna,93,180,reverse,strike-slip,reverse oblique
+195,Oceanside [1],90,168,reverse,strike-slip,reverse
+197,Ortigalita (north),112,180,reverse oblique,strike-slip,strike-slip
+198,Ortigalita (south),122,180,reverse oblique,strike-slip,strike-slip
+199,Owens Valley,-173,180,strike-slip,strike-slip,normal oblique
+200,Owens Valley (Keough Hot Springs),-173,-90,strike-slip,normal,normal oblique
+201,Owl Lake,0,180,strike-slip,strike-slip,strike-slip
+202,Ozena,90,108,reverse,reverse,reverse
+203,Palos Verdes,58,180,reverse oblique,strike-slip,reverse
+204,Panamint Valley,-150,-2,normal oblique,strike-slip,normal oblique
+205,Paradise,180,180,strike-slip,strike-slip,strike-slip
+206,Peralta Hills,90,173,reverse,strike-slip,reverse oblique
+207,Pilarcitos,96,180,reverse,strike-slip,strike-slip
+208,Pine Mountain,15,158,strike-slip,reverse oblique,reverse
+209,Pinto Mountain,0,180,strike-slip,strike-slip,strike-slip
+210,Pisgah - Bullion Mountain - Mesquite Lake,0,180,strike-slip,strike-slip,strike-slip
+211,"Pitas Point (lower, Montalvo) [1]",57,107,reverse oblique,reverse,reverse
+212,"Pitas Point (lower, west) [1]",30,129,reverse oblique,reverse oblique,reverse
+214,Pittville,-90,-90,normal,normal,normal
+215,Pleito,90,178,reverse,strike-slip,reverse oblique
+216,Point Reyes,90,177,reverse,strike-slip,reverse oblique
+217,Point Reyes (connector),90,179,reverse,strike-slip,reverse oblique
+218,Polaris,-146,180,normal oblique,strike-slip,normal oblique
+222,Puente Hills [1],48,170,reverse oblique,strike-slip,reverse oblique
+223,Quien Sabe,180,180,strike-slip,strike-slip,strike-slip
+224,Raymond,35,159,reverse oblique,reverse oblique,reverse oblique
+225,Red Mountain,39,112,reverse oblique,reverse oblique,reverse
+226,Red Pass,180,180,strike-slip,strike-slip,strike-slip
+227,Redondo Canyon [1],90,171,reverse,strike-slip,reverse
+229,Reliz,146,180,reverse oblique,strike-slip,reverse oblique
+230,Richfield,66,128,reverse oblique,reverse oblique,reverse
+231,Rinconada,116,180,reverse oblique,strike-slip,strike-slip
+232,Robinson Creek,-90,-90,normal,normal,normal
+233,Rocky Ledge,-90,-90,normal,normal,normal
+234,Rose Canyon,92,180,reverse,strike-slip,strike-slip
+235,Round Valley,-90,-90,normal,normal,normal
+236,Russ,135,135,reverse oblique,reverse oblique,reverse oblique
+237,San Cayetano,18,135,strike-slip,reverse oblique,reverse
+238,San Clemente,180,180,strike-slip,strike-slip,strike-slip
+239,San Diego Trough (north) [1],92,180,reverse,strike-slip,strike-slip
+241,San Diego Trough (south),102,180,reverse,strike-slip,strike-slip
+242,San Gabriel,71,180,reverse,strike-slip,reverse
+243,San Gabriel (extension),52,180,reverse oblique,strike-slip,reverse
+244,San Gorgonio Pass,90,178,reverse,strike-slip,reverse oblique
+245,San Gregorio (north),98,180,reverse,strike-slip,strike-slip
+246,San Gregorio (south),126,180,reverse oblique,strike-slip,strike-slip
+247,San Joaquin Hills,90,154,reverse,reverse oblique,reverse
+248,San Jose,30,169,reverse oblique,strike-slip,reverse oblique
+249,San Juan,110,180,reverse oblique,strike-slip,strike-slip
+251,San Luis Range (Oceano) [1],90,170,reverse,strike-slip,reverse
+252,San Luis Range (Pecho),90,179,reverse,strike-slip,strike-slip
+254,San Luis Range [1],90,178,reverse,strike-slip,reverse oblique
+255,San Pedro Basin,46,180,reverse oblique,strike-slip,reverse oblique
+256,San Pedro Escarpment,56,149,reverse oblique,reverse oblique,reverse
+257,San Vicente,38,167,reverse oblique,strike-slip,reverse oblique
+258,Santa Cruz - Catalina Ridge [1],36,135,reverse oblique,reverse oblique,reverse
+260,Santa Cruz Island,30,127,reverse oblique,reverse oblique,reverse oblique
+261,Santa Monica Bay,55,152,reverse oblique,reverse oblique,reverse
+262,Santa Monica [1],30,164,reverse oblique,strike-slip,reverse oblique
+264,Santa Rosa Island,30,107,reverse oblique,reverse,reverse oblique
+265,"Santa Susana (east, connector)",43,145,reverse oblique,reverse oblique,reverse
+266,Santa Susana [1],30,98,reverse oblique,reverse,reverse
+268,Santa Ynez (east),0,117,strike-slip,reverse oblique,reverse oblique
+269,Santa Ynez (west),0,138,strike-slip,reverse oblique,reverse
+270,Santa Ynez River,5,103,strike-slip,reverse,reverse
+271,Sargent,111,180,reverse oblique,strike-slip,strike-slip
+272,Scodie Lineament (seismicity),0,59,strike-slip,reverse oblique,reverse oblique
+273,Sheephole,180,180,strike-slip,strike-slip,strike-slip
+274,Shoreline,92,180,reverse,strike-slip,strike-slip
+275,Sierra Madre,43,168,reverse oblique,strike-slip,reverse
+276,Sierra Madre (San Fernando),55,155,reverse oblique,reverse oblique,reverse
+277,Sierra Nevada (north),-168,-90,strike-slip,normal,normal
+278,Sierra Nevada (south),-157,-90,normal oblique,normal,normal
+279,Silver Creek,161,180,strike-slip,strike-slip,strike-slip
+280,Simi - Santa Rosa,30,142,reverse oblique,reverse oblique,reverse
+281,Sisar,64,124,reverse oblique,reverse oblique,reverse
+282,Skinner Flat,-135,-135,normal oblique,normal oblique,normal oblique
+283,Superstition Hills,145,180,reverse oblique,strike-slip,strike-slip
+284,Surprise Valley,-90,-90,normal,normal,normal
+285,Swain Ravine - Spenceville,-90,-90,normal,normal,normal
+286,Table Bluff,90,90,reverse,reverse,reverse
+287,Tank Canyon,-143,-90,normal oblique,normal,normal oblique
+288,Thirty Mile Bank,90,163,reverse,strike-slip,reverse oblique
+289,Tin Mountain,-154,-90,normal oblique,normal,normal oblique
+290,Towne Pass,-140,-90,normal oblique,normal,normal oblique
+291,Trinidad [1],90,156,reverse,reverse oblique,reverse oblique
+292,Ventura - Pitas Point,57,117,reverse oblique,reverse oblique,reverse
+293,Verdugo,39,153,reverse oblique,reverse oblique,reverse
+294,Walker Spring,-123,-90,normal oblique,normal,normal
+295,West Napa,140,180,reverse oblique,strike-slip,strike-slip
+296,West Tahoe,-146,-90,normal oblique,normal,normal
+297,White Mountains,-173,180,strike-slip,strike-slip,strike-slip
+298,White Wolf,-87,60,normal,reverse oblique,reverse oblique
+299,White Wolf (extension),42,60,reverse oblique,reverse oblique,reverse oblique
+300,Whittier [1],49,179,reverse oblique,strike-slip,reverse oblique
+302,Wight Way,-90,-90,normal,normal,normal
+303,Yorba Linda,74,174,reverse,strike-slip,reverse
+304,Zayante - Vergeles [1],138,178,reverse oblique,strike-slip,reverse oblique
+700,San Andreas (Coachella),0,180,strike-slip,strike-slip,strike-slip
+701,San Andreas (San Gorgonio Pass - Garnet Hill),0,180,strike-slip,strike-slip,reverse oblique
+702,"San Andreas (San Bernardino, south)",0,180,strike-slip,strike-slip,strike-slip
+703,"San Andreas (San Bernardino, north)",0,180,strike-slip,strike-slip,strike-slip
+704,"San Andreas (Mojave, south)",0,180,strike-slip,strike-slip,strike-slip
+705,"San Andreas (Mojave, north)",0,180,strike-slip,strike-slip,strike-slip
+706,San Andreas (Big Bend),88,180,reverse,strike-slip,strike-slip
+707,San Andreas (Carrizo),118,180,reverse oblique,strike-slip,strike-slip
+708,San Andreas (Cholame),131,180,reverse oblique,strike-slip,strike-slip
+709,San Andreas (Parkfield),147,180,reverse oblique,strike-slip,strike-slip
+710,San Andreas (Creeping),144,180,reverse oblique,strike-slip,strike-slip
+711,San Andreas (Santa Cruz Mountains),117,180,reverse oblique,strike-slip,strike-slip
+712,San Andreas (Peninsula),100,180,reverse,strike-slip,strike-slip
+713,San Andreas (North Coast),115,180,reverse oblique,strike-slip,strike-slip
+714,San Andreas (Offshore),110,180,reverse oblique,strike-slip,strike-slip
+800,San Jacinto (Superstition Mountain),136,180,reverse oblique,strike-slip,strike-slip
+801,San Jacinto (Borrego),129,180,reverse oblique,strike-slip,strike-slip
+802,San Jacinto (Coyote Creek),122,180,reverse oblique,strike-slip,strike-slip
+803,San Jacinto (Clark),120,180,reverse oblique,strike-slip,strike-slip
+804,San Jacinto (Anza),112,180,reverse oblique,strike-slip,strike-slip
+805,San Jacinto (stepover),0,180,strike-slip,strike-slip,strike-slip
+806,San Jacinto (San Jacinto Valley),0,180,strike-slip,strike-slip,strike-slip
+807,San Jacinto (San Bernardino),0,180,strike-slip,strike-slip,strike-slip
+840,Elsinore (Coyote Mountains),136,180,reverse oblique,strike-slip,strike-slip
+841,Elsinore (Julian),117,180,reverse oblique,strike-slip,strike-slip
+842,Elsinore (Temecula),94,180,reverse,strike-slip,strike-slip
+843,Elsinore (stepover),94,180,reverse,strike-slip,strike-slip
+844,Elsinore (Glen Ivy),81,180,reverse,strike-slip,reverse oblique
+880,Garlock (west),-3,180,strike-slip,strike-slip,strike-slip
+881,Garlock (center),-148,180,normal oblique,strike-slip,strike-slip
+882,Garlock (east),0,180,strike-slip,strike-slip,strike-slip
+900,"Hayward (south, extension)",135,180,reverse oblique,strike-slip,reverse oblique
+901,Hayward (south),165,180,strike-slip,strike-slip,strike-slip
+902,Hayward (north),171,180,strike-slip,strike-slip,strike-slip
+903,Rodgers Creek - Healdsburg,176,180,strike-slip,strike-slip,strike-slip
+920,"Calaveras (south, Paicines)",153,180,reverse oblique,strike-slip,strike-slip
+921,Calaveras (south),165,180,strike-slip,strike-slip,strike-slip
+922,Calaveras (center),159,180,reverse oblique,strike-slip,strike-slip
+923,Calaveras (north),168,180,strike-slip,strike-slip,strike-slip
+1000,Antelope Valley,-90,-90,normal,normal,normal
+1002,Incline Village,-90,-90,normal,normal,normal
+2500,Goose Lake,-90,-90,normal,normal,normal
+2502,South Klamath Lake (west),-90,-90,normal,normal,normal

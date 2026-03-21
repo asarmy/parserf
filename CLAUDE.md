@@ -4,15 +4,22 @@ Use Google style docstrings. Line length is 99.
 
 For scripts, include module docstrings in this format (line length is 99):
 """
-Short description (e.g., Delete specific records from a table by primary key.)
+Create a database table, if it does not exist, and upsert CSV data into it.
+
+This script performs the following steps:
+1. Optionally backs up the current database before making changes.
+2. Loads a SQLAlchemy ORM class by its table or class name.
+3. Validates the existence and format of the provided CSV file.
+4. Creates the corresponding database table if it doesn't exist.
+5. Performs an "upsert" operation: inserts new rows or updates existing ones.
 
 Usage
 -----
 Run this script from the project root directory:
-    uv run python dbtools/delete_records.py <table_name> <primary_keys...> -d <description> [--backup]
+    uv run python dbtools/import_table.py <table_name> <csv_path> <description> [--backup]
 
-Examples
---------
-    uv run python dbtools/delete_records.py unit_weight_moisture_content 88 89 90 -d "Remove bad data"
-    uv run python dbtools/delete_records.py geology $(seq 1 200) -d "Flush geology records to start over"
+Example
+-------
+    uv run python dbtools/import_table.py uscs data/uscs.csv "initial USCS data import"
+    uv run python dbtools/import_table.py gradation_summary data/gradation.csv "Q4 lab results" --backup
 """
