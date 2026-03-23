@@ -1,3 +1,9 @@
+# Note: this is just a scratch file for testing things out. It should be deleted eventually.
+# TODO: faultubsection needs to add length, width, area to the participating ruptures dataframe,
+# so that we can easily access those values for each rupture.
+# This will be useful for calculating the slip rate for each rupture,
+# which is needed for the slip rate model.  ha not really but close, good try ai
+
 from parserf.models import FaultModel, FaultModelDataset
 from parserf.subsection import FaultSubsection
 
@@ -21,3 +27,5 @@ print(sub.width_km)
 print(sub.area_km2)
 print(sub.participating_ruptures.head())
 print(sub.participating_ruptures.tail())
+# df = sub.participating_ruptures
+# df.to_csv('participating_ruptures.csv', index=False)
