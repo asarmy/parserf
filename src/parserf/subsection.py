@@ -13,12 +13,28 @@ from parserf.models import FaultModel, FaultModelDataset
 from parserf.utils import merge_geometry
 
 
+def _parent_area_pcts(
+    parsed_indices: set[int],
+    index_to_area: dict[int, float],
+    index_to_parent: dict[int, str],
+) -> dict[str, float]:
+    """Compute area percentage contribution by parent fault name for a rupture."""
+    parent_areas: dict[str, float] = {}
+    for i in parsed_indices:
+        if i in index_to_area and i in index_to_parent:
+            name = index_to_parent[i]
+            parent_areas[name] = parent_areas.get(name, 0.0) + index_to_area[i]
+    total = sum(parent_areas.values())
+    if total == 0:
+        return {}
+    return {k: v / total * 100.0 for k, v in parent_areas.items()}
+
+
 class FaultSubsection:
     """A dataset-backed view of a single fault subsection.
 
-    Provides convenient, subsection-centered access to the underlying
-    ``FaultModelDataset``: core section attributes, computed geometric
-    properties, and derived participating-rupture data.
+    Provides convenient, subsection-centered access to the underlying ``FaultModelDataset``: core
+    section attributes, computed geometric properties, and derived participating-rupture data.
 
     Args:
         dataset: The fault model dataset backing this view.
@@ -36,8 +52,12 @@ class FaultSubsection:
         dip_direction: Dip direction in degrees.
         aseismicity: Aseismicity factor (0 to 1).
         geometry: Shapely LineString of the surface trace (EPSG:4326).
-        participating_ruptures: GeoDataFrame of ruptures where this subsection
-            participates, with merged section geometries (EPSG:4326).
+        length_km: Geodesic length of the surface trace in km.
+        width_km: Down-dip width in km.
+        area_km2: Fault area in km².
+        participating_ruptures: GeoDataFrame of ruptures where this subsection participates, with
+            merged section geometries (EPSG:4326), length_km, area_km2, and parent_area_pcts
+            columns.
 
     Raises:
         ValueError: If the subsection index is not found in the dataset.
@@ -148,12 +168,33 @@ class FaultSubsection:
 
     @cached_property
     def participating_ruptures(self) -> gpd.GeoDataFrame:
-        """GeoDataFrame of ruptures involving this subsection, with geometries."""
+        """GeoDataFrame of ruptures involving this subsection.
+
+        Columns include all fields from ruptures_parsed plus a merged surface-trace geometry
+        (EPSG:4326), a length_km column giving the total geodesic length, an area_km2
+        column giving the total fault area, and a parent_area_pcts column with a dict mapping
+        each parent fault name to its percentage of the rupture's total area.
+        """
         rp = self._dataset.ruptures_parsed
         mask = rp["parsed_indices"].apply(lambda s: self.index in s)
         pr_df = rp.loc[mask].reset_index(drop=True)
 
         index_to_geom = self._dataset.index_to_geometry
         geometries = [merge_geometry(idx, index_to_geom) for idx in pr_df["parsed_indices"]]
+
+        index_to_len = self._dataset.index_to_length_km
+        pr_df["length_km"] = pr_df["parsed_indices"].apply(
+            lambda s: sum(index_to_len[i] for i in s if i in index_to_len)
+        )
+
+        index_to_area = self._dataset.index_to_area_km2
+        pr_df["area_km2"] = pr_df["parsed_indices"].apply(
+            lambda s: sum(index_to_area[i] for i in s if i in index_to_area)
+        )
+
+        index_to_parent = self._dataset.index_to_parent_name
+        pr_df["parent_area_pcts"] = pr_df["parsed_indices"].apply(
+            lambda s: _parent_area_pcts(s, index_to_area, index_to_parent)
+        )
 
         return gpd.GeoDataFrame(pr_df, geometry=geometries, crs="EPSG:4326")

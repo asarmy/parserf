@@ -8,7 +8,9 @@ from functools import cached_property
 from pathlib import Path
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
+import pyproj
 
 from parserf.utils import parse_indices
 
@@ -38,10 +40,10 @@ _VERSION_MAP = {
 class FaultModelDataset:
     """Data access layer for earthquake rupture forecast fault model datasets.
 
-    Provides cached access to earthquake rupture forecast data files for different fault
-    models including NSHMP 2023, UCERF3 v3.1, and UCERF3 v3.2. Handles file loading and
-    provides structured access to parent IDs, fault sections, and rupture scenarios with
-    parsed subsection indices.
+    Provides cached access to earthquake rupture forecast data files for different fault models
+    including NSHMP 2023, UCERF3 v3.1, and UCERF3 v3.2. Handles file loading and provides
+    structured access to parent IDs, fault sections, and rupture scenarios with parsed subsection
+    indices.
 
     Args:
         model: The fault model version.
@@ -50,6 +52,10 @@ class FaultModelDataset:
         parent_ids: DataFrame containing fault names and their parent IDs.
         sections: GeoDataFrame of fault subsections with geometry and metadata.
         ruptures_parsed: Rupture data with parsed subsection indices as sets of integers.
+        index_to_geometry: Dict mapping subsection index to its LineString geometry.
+        index_to_length_km: Dict mapping subsection index to its geodesic trace length in km.
+        index_to_area_km2: Dict mapping subsection index to its fault area in km².
+        index_to_parent_name: Dict mapping subsection index to its parent fault name.
 
     Examples:
         >>> from parserf.models import FaultModel, FaultModelDataset
@@ -97,10 +103,47 @@ class FaultModelDataset:
 
     @cached_property
     def index_to_geometry(self) -> dict:
-        """Subsection index to LineString geometry lookup.
+        """Dict mapping subsection index to its LineString geometry (EPSG:4326).
 
-        Builds a dict mapping subsection index -> geometry for fast repeated lookup. Built once per
-        dataset so that multiple FaultSubsection instances can share it when constructing rupture
-        geometries.
+        Built once per dataset and shared across FaultSubsection instances to avoid redundant
+        geometry lookups when constructing rupture geometries.
         """
         return self.sections.set_index("index")["geometry"].to_dict()
+
+    @cached_property
+    def index_to_length_km(self) -> dict[int, float]:
+        """Dict mapping subsection index to its geodesic trace length in km.
+
+        Built once per dataset and shared across FaultSubsection instances to avoid redundant
+        pyproj calls when computing rupture scenario lengths.
+        """
+        geod = pyproj.Geod(ellps="WGS84")
+        sections = self.sections
+        lengths = sections["geometry"].apply(lambda g: geod.geometry_length(g) / 1000.0)
+        return dict(zip(sections["index"], lengths))
+
+    @cached_property
+    def index_to_area_km2(self) -> dict[int, float]:
+        """Dict mapping subsection index to its fault area in km².
+
+        Area is computed as trace length (geodesic) times down-dip width. Built once per
+        dataset and shared across FaultSubsection instances.
+        """
+        geod = pyproj.Geod(ellps="WGS84")
+        sections = self.sections
+        lengths_km = sections["geometry"].apply(lambda g: geod.geometry_length(g) / 1000.0)
+        widths_km = (sections["lower-depth"] - sections["upper-depth"]) / np.sin(
+            np.radians(sections["dip"])
+        )
+        return dict(zip(sections["index"], lengths_km * widths_km))
+
+    @cached_property
+    def index_to_parent_name(self) -> dict[int, str]:
+        """Dict mapping subsection index to its parent fault name.
+
+        Built once per dataset and shared across FaultSubsection instances.
+        """
+        pid_to_name = self.parent_ids.set_index("parent_id")["parent_name"].to_dict()
+        sections = self.sections
+        parent_names = sections["parent-id"].map(pid_to_name)
+        return dict(zip(sections["index"], parent_names))

@@ -95,6 +95,9 @@ class TestParticipatingRuptures:
             "rake",
             "indices",
             "parsed_indices",
+            "length_km",
+            "area_km2",
+            "parent_area_pcts",
             "geometry",
         }
         assert expected.issubset(set(sub_0.participating_ruptures.columns))
@@ -103,6 +106,47 @@ class TestParticipatingRuptures:
         """Each rupture geometry should be a LineString or MultiLineString."""
         for geom in sub_0.participating_ruptures.geometry:
             assert isinstance(geom, (LineString, MultiLineString))
+
+    def test_length_km_all_positive(self, sub_0):
+        assert (sub_0.participating_ruptures["length_km"] > 0).all()
+
+    def test_length_km_equals_subsection_sum(self, sub_0, dataset_31):
+        """Verify rupture length equals sum of constituent subsection lengths."""
+        row = sub_0.participating_ruptures.iloc[0]
+        expected = sum(
+            dataset_31.index_to_length_km[i]
+            for i in row["parsed_indices"]
+            if i in dataset_31.index_to_length_km
+        )
+        assert row["length_km"] == pytest.approx(expected)
+
+    def test_area_km2_all_positive(self, sub_0):
+        assert (sub_0.participating_ruptures["area_km2"] > 0).all()
+
+    def test_area_km2_equals_subsection_sum(self, sub_0, dataset_31):
+        """Verify rupture area equals sum of constituent subsection areas."""
+        row = sub_0.participating_ruptures.iloc[0]
+        expected = sum(
+            dataset_31.index_to_area_km2[i]
+            for i in row["parsed_indices"]
+            if i in dataset_31.index_to_area_km2
+        )
+        assert row["area_km2"] == pytest.approx(expected)
+
+    def test_parent_area_pcts_is_dict(self, sub_0):
+        val = sub_0.participating_ruptures["parent_area_pcts"].iloc[0]
+        assert isinstance(val, dict)
+
+    def test_parent_area_pcts_sum_to_100(self, sub_0):
+        """Each rupture's parent area percentages should sum to 100."""
+        for pcts in sub_0.participating_ruptures["parent_area_pcts"]:
+            assert pytest.approx(sum(pcts.values()), abs=0.01) == 100.0
+
+    def test_parent_area_pcts_contains_parent(self, sub_0):
+        """This subsection's parent name should appear in at least one rupture."""
+        assert any(
+            sub_0.parent_name in pcts for pcts in sub_0.participating_ruptures["parent_area_pcts"]
+        )
 
     def test_crs(self, sub_0):
         assert sub_0.participating_ruptures.crs.to_epsg() == 4326

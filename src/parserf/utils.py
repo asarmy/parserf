@@ -34,8 +34,8 @@ def merge_geometry(parsed_indices, index_to_geom):
         index_to_geom: Dict mapping subsection index to its LineString geometry.
 
     Returns:
-        A LineString (if sections connect) or MultiLineString (if they don't),
-        or None if no geometries found.
+        A LineString (if sections connect) or MultiLineString (if they don't), or None if no
+        geometries found.
     """
     from shapely import MultiLineString
     from shapely.ops import linemerge
