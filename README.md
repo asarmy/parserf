@@ -20,6 +20,12 @@ Library for parsing earthquake rupture forecast (ERF) datasets.
   - `normal oblique`: from -160° to -110° and from -70° to -20°
   - `normal`: from -110° to -70°
 
+# Code Architecture
+
+- `FaultModelDataset` is the package's data access layer: it encapsulates each fault model and provides cached access to raw and derived tables such as sections, parent IDs, and ruptures.
+
+- `FaultSubsection` is a dataset-backed view object over a single subsection, exposing subsection attributes and computed properties while delegating shared data loading and rupture lookup to its underlying `FaultModelDataset`.
+
 # Credits
 
 Portions of this code were generated or refined with the assistance of AI tools. The concept and code architecture/design are the original work of the author.

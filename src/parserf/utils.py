@@ -24,3 +24,25 @@ def parse_indices(indices_str: str) -> set[int]:
         else:
             indices.add(int(chunk))
     return indices
+
+
+def merge_geometry(parsed_indices, index_to_geom):
+    """Merge fault subsection geometries into a single line geometry.
+
+    Args:
+        parsed_indices: Set of subsection indices for a rupture.
+        index_to_geom: Dict mapping subsection index to its LineString geometry.
+
+    Returns:
+        A LineString (if sections connect) or MultiLineString (if they don't),
+        or None if no geometries found.
+    """
+    from shapely import MultiLineString
+    from shapely.ops import linemerge
+
+    geoms = [index_to_geom[i] for i in sorted(parsed_indices) if i in index_to_geom]
+    if len(geoms) == 0:
+        return None
+    if len(geoms) == 1:
+        return geoms[0]
+    return linemerge(MultiLineString(geoms))
