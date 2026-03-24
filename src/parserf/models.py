@@ -52,10 +52,6 @@ class FaultModelDataset:
         parent_ids: DataFrame containing fault names and their parent IDs.
         sections: GeoDataFrame of fault subsections with geometry and metadata.
         ruptures_parsed: Rupture data with parsed subsection indices as sets of integers.
-        index_to_geometry: Dict mapping subsection index to its LineString geometry.
-        index_to_length_km: Dict mapping subsection index to its geodesic trace length in km.
-        index_to_area_km2: Dict mapping subsection index to its fault area in km².
-        index_to_parent_name: Dict mapping subsection index to its parent fault name.
 
     Examples:
         >>> from parserf.models import FaultModel, FaultModelDataset
@@ -102,48 +98,18 @@ class FaultModelDataset:
         return df
 
     @cached_property
-    def index_to_geometry(self) -> dict:
-        """Dict mapping subsection index to its LineString geometry (EPSG:4326).
+    def _subsection_table(self) -> pd.DataFrame:
+        """Indexed table of per-subsection data: the single source of truth.
 
-        Built once per dataset and shared across FaultSubsection instances to avoid redundant
-        geometry lookups when constructing rupture geometries.
-        """
-        return self.sections.set_index("index")["geometry"].to_dict()
-
-    @cached_property
-    def index_to_length_km(self) -> dict[int, float]:
-        """Dict mapping subsection index to its geodesic trace length in km.
-
-        Built once per dataset and shared across FaultSubsection instances to avoid redundant
-        pyproj calls when computing rupture scenario lengths.
+        A DataFrame indexed by subsection ``index`` (int) containing all columns from
+        ``sections`` plus computed ``length_km``, ``width_km``, ``area_km2``, and looked-up
+        ``parent_name``.  Built once per dataset and shared across view objects.
         """
         geod = pyproj.Geod(ellps="WGS84")
-        sections = self.sections
-        lengths = sections["geometry"].apply(lambda g: geod.geometry_length(g) / 1000.0)
-        return dict(zip(sections["index"], lengths))
-
-    @cached_property
-    def index_to_area_km2(self) -> dict[int, float]:
-        """Dict mapping subsection index to its fault area in km².
-
-        Area is computed as trace length (geodesic) times down-dip width. Built once per
-        dataset and shared across FaultSubsection instances.
-        """
-        geod = pyproj.Geod(ellps="WGS84")
-        sections = self.sections
-        lengths_km = sections["geometry"].apply(lambda g: geod.geometry_length(g) / 1000.0)
-        widths_km = (sections["lower-depth"] - sections["upper-depth"]) / np.sin(
-            np.radians(sections["dip"])
-        )
-        return dict(zip(sections["index"], lengths_km * widths_km))
-
-    @cached_property
-    def index_to_parent_name(self) -> dict[int, str]:
-        """Dict mapping subsection index to its parent fault name.
-
-        Built once per dataset and shared across FaultSubsection instances.
-        """
+        df = self.sections.copy().set_index("index")
+        df["length_km"] = df["geometry"].apply(lambda g: geod.geometry_length(g) / 1000.0)
+        df["width_km"] = (df["lower-depth"] - df["upper-depth"]) / np.sin(np.radians(df["dip"]))
+        df["area_km2"] = df["length_km"] * df["width_km"]
         pid_to_name = self.parent_ids.set_index("parent_id")["parent_name"].to_dict()
-        sections = self.sections
-        parent_names = sections["parent-id"].map(pid_to_name)
-        return dict(zip(sections["index"], parent_names))
+        df["parent_name"] = df["parent-id"].map(pid_to_name)
+        return df

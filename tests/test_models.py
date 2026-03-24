@@ -1,9 +1,7 @@
 """Tests for FaultModel enum and FaultModelDataset."""
 
 import geopandas as gpd
-import numpy as np
 import pandas as pd
-import pyproj
 import pytest
 
 from parserf.models import FaultModel
@@ -70,45 +68,3 @@ class TestFaultModelDataset:
         """Cached properties return the same object on repeated access."""
         assert dataset.sections is dataset.sections
         assert dataset.parent_ids is dataset.parent_ids
-
-    def test_index_to_length_km_is_dict(self, dataset):
-        assert isinstance(dataset.index_to_length_km, dict)
-
-    def test_index_to_length_km_all_positive(self, dataset):
-        assert all(v > 0 for v in dataset.index_to_length_km.values())
-
-    def test_index_to_length_km_count_matches_sections(self, dataset):
-        assert len(dataset.index_to_length_km) == len(dataset.sections)
-
-    def test_index_to_length_km_spot_check(self, dataset):
-        """Verify a value against a direct pyproj call."""
-        geod = pyproj.Geod(ellps="WGS84")
-        row = dataset.sections.iloc[0]
-        expected = geod.geometry_length(row["geometry"]) / 1000.0
-        assert dataset.index_to_length_km[row["index"]] == pytest.approx(expected)
-
-    def test_index_to_area_km2_is_dict(self, dataset):
-        assert isinstance(dataset.index_to_area_km2, dict)
-
-    def test_index_to_area_km2_all_positive(self, dataset):
-        assert all(v > 0 for v in dataset.index_to_area_km2.values())
-
-    def test_index_to_area_km2_count_matches_sections(self, dataset):
-        assert len(dataset.index_to_area_km2) == len(dataset.sections)
-
-    def test_index_to_area_km2_spot_check(self, dataset):
-        """Verify a value equals length_km * width_km for the same subsection."""
-        row = dataset.sections.iloc[0]
-        idx = row["index"]
-        length_km = dataset.index_to_length_km[idx]
-        width_km = (row["lower-depth"] - row["upper-depth"]) / np.sin(np.radians(row["dip"]))
-        assert dataset.index_to_area_km2[idx] == pytest.approx(length_km * width_km)
-
-    def test_index_to_parent_name_is_dict(self, dataset):
-        assert isinstance(dataset.index_to_parent_name, dict)
-
-    def test_index_to_parent_name_count_matches_sections(self, dataset):
-        assert len(dataset.index_to_parent_name) == len(dataset.sections)
-
-    def test_index_to_parent_name_all_strings(self, dataset):
-        assert all(isinstance(v, str) for v in dataset.index_to_parent_name.values())

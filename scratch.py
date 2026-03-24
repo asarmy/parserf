@@ -1,4 +1,11 @@
 # Note: this is just a scratch file for testing things out. It should be deleted eventually.
+
+# TODO: can I have a git centric TODO list?
+
+# TODO: tests take a while to run
+# TODO:
+# TODO: are you haopy with FaultSubsection and FaultSubsectionData and FaultSubsectionRuptures?
+# is there too much redundancy in having the Data accessed as .data in FaultSubsection for example?
 # TODO: faultubsection needs to add length, width, area to the participating ruptures dataframe,
 # so that we can easily access those values for each rupture.
 # This will be useful for calculating the slip rate for each rupture,
@@ -8,24 +15,13 @@ from parserf.models import FaultModel, FaultModelDataset
 from parserf.subsection import FaultSubsection
 
 dataset = FaultModelDataset(FaultModel.UCERF3_31)
-# parent_ids = dataset.parent_ids
-# sections = dataset.sections
-# ruptures = dataset.ruptures_parsed
-
-# print(parent_ids)
-# print(sections.head())
-# print(ruptures.head())
-
-
 sub = FaultSubsection(dataset, index=0)
-print(sub.name)
-print(sub.parent_id)
-print(sub.parent_name)
-print(sub.upper_depth)
-print(sub.length_km)
-print(sub.width_km)
-print(sub.area_km2)
-print(sub.participating_ruptures.head())
-print(sub.participating_ruptures.tail())
-# df = sub.participating_ruptures
-# df.to_csv('participating_ruptures.csv', index=False)
+print("sub.data:", sub.data)
+print("sub.ruptures:", sub.ruptures)
+print("sub.ruptures.participating_ruptures:", sub.ruptures.participating_ruptures)
+print("sub.data.name:", sub.data.name)
+print("sub.data.length_km:", sub.data.length_km)
+print("sub.ruptures:", sub.ruptures)
+print("sub.ruptures.participating_ruptures.head():", sub.ruptures.participating_ruptures.head())
+print("sub.ruptures.participating_ruptures.tail():", sub.ruptures.participating_ruptures.tail())
+print("sub.ruptures.participating_ruptures.columns:", sub.ruptures.participating_ruptures.columns)

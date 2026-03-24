@@ -22,9 +22,13 @@ Library for parsing earthquake rupture forecast (ERF) datasets.
 
 # Code Architecture
 
-- `FaultModelDataset` is the package's data access layer: it encapsulates each fault model and provides cached access to raw and derived tables such as sections, parent IDs, and ruptures.
+- `FaultModelDataset` is the package's data access layer: it encapsulates each fault model and provides cached access to raw and derived tables such as sections, parent IDs, and ruptures. It internally consolidates per-subsection data (geometry, computed dimensions, and parent fault names) as the single source of truth for the view objects below.
 
-- `FaultSubsection` is a dataset-backed view object over a single subsection, exposing subsection attributes and computed properties while delegating shared data loading and rupture lookup to its underlying `FaultModelDataset`.
+- `FaultSubsection` is a thin facade that validates a subsection index exists in the dataset and exposes two view objects: `.data` and `.ruptures`.
+
+- `FaultSubsectionData` is a dataset-backed view of a single subsection's local attributes (name, dip, depth, geometry, length, width, area, etc.), reading all values from the dataset's internal subsection cache.
+
+- `FaultSubsectionRuptures` is a dataset-backed view of a single subsection's rupture participation, providing the `participating_ruptures` GeoDataFrame with merged geometries, lengths, areas, and parent area percentages.
 
 # Credits
 
