@@ -68,3 +68,18 @@ class TestFaultModelDataset:
         """Cached properties return the same object on repeated access."""
         assert dataset.sections is dataset.sections
         assert dataset.parent_ids is dataset.parent_ids
+
+    def test_nearest_index_returns_valid_index(self, dataset):
+        """Returned index exists in the sections GeoDataFrame."""
+        idx = dataset.nearest_index(lat=35.77, lon=-117.60)
+        assert idx in dataset.sections["index"].values
+
+    def test_nearest_index_returns_int(self, dataset):
+        idx = dataset.nearest_index(lat=35.77, lon=-117.60)
+        assert isinstance(idx, int)
+
+    def test_nearest_index_known_result(self, dataset_31):
+        """Coordinate near Ridgecrest should return Little Lake subsection."""
+        idx = dataset_31.nearest_index(lat=35.77, lon=-117.60)
+        name = dataset_31.sections.set_index("index").loc[idx, "name"]
+        assert "Little Lake" in name

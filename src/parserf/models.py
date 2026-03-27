@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 from enum import IntEnum
 from functools import cached_property
@@ -11,6 +12,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pyproj
+from shapely.geometry import Point
 
 from parserf.utils import parse_indices
 
@@ -113,3 +115,19 @@ class FaultModelDataset:
         pid_to_name = self.parent_ids.set_index("parent_id")["parent_name"].to_dict()
         df["parent_name"] = df["parent-id"].map(pid_to_name)
         return df
+
+    def nearest_index(self, *, lat: float, lon: float) -> int:
+        """Return the subsection index closest to a geographic coordinate.
+
+        Args:
+            lat: Latitude in decimal degrees.
+            lon: Longitude in decimal degrees.
+
+        Returns:
+            The integer index of the nearest fault subsection.
+        """
+        point = Point(lon, lat)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="Geometry is in a geographic CRS")
+            distances = self.sections.set_index("index").distance(point)
+        return int(distances.idxmin())
