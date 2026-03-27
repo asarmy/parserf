@@ -1461,12 +1461,14 @@ dev = [
     { name = "ruff" },
 ]
 examples = [
+    { name = "ipykernel" },
     { name = "jupyterlab" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "geopandas" },
+    { name = "ipykernel", marker = "extra == 'examples'", specifier = ">=7.2.0" },
     { name = "jupyterlab", marker = "extra == 'examples'" },
     { name = "matplotlib" },
     { name = "numpy" },
