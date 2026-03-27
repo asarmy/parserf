@@ -5,6 +5,8 @@ from __future__ import annotations
 from functools import cached_property
 
 import geopandas as gpd
+import numpy as np
+import pandas as pd
 
 from parserf.models import FaultModel, FaultModelDataset
 from parserf.utils import merge_geometry
@@ -82,42 +84,42 @@ class FaultSubsectionData:
     @property
     def name(self) -> str:
         """Subsection name (e.g., "Airport Lake (0)")."""
-        return self._row["name"]
+        return self._row["name"]  # type: ignore
 
     @property
     def parent_id(self) -> int:
         """Integer ID of the parent fault."""
-        return self._row["parent-id"]
+        return self._row["parent-id"]  # type: ignore
 
     @property
     def parent_name(self) -> str:
         """Name of the parent fault."""
-        return self._row["parent_name"]
+        return self._row["parent_name"]  # type: ignore
 
     @property
     def upper_depth(self) -> float:
         """Upper seismogenic depth in km."""
-        return self._row["upper-depth"]
+        return self._row["upper-depth"]  # type: ignore
 
     @property
     def lower_depth(self) -> float:
         """Lower seismogenic depth in km."""
-        return self._row["lower-depth"]
+        return self._row["lower-depth"]  # type: ignore
 
     @property
     def dip(self) -> float:
         """Fault dip angle in degrees."""
-        return self._row["dip"]
+        return self._row["dip"]  # type: ignore
 
     @property
     def dip_direction(self) -> float:
         """Dip direction in degrees."""
-        return self._row["dip-direction"]
+        return self._row["dip-direction"]  # type: ignore
 
     @property
     def aseismicity(self) -> float:
         """Aseismicity factor (0 to 1)."""
-        return self._row["aseismicity"]
+        return self._row["aseismicity"]  # type: ignore
 
     @property
     def geometry(self):
@@ -127,17 +129,17 @@ class FaultSubsectionData:
     @property
     def length_km(self) -> float:
         """Geodesic length of the surface trace in kilometers."""
-        return self._row["length_km"]
+        return self._row["length_km"]  # type: ignore
 
     @property
     def width_km(self) -> float:
         """Down-dip width in kilometers."""
-        return self._row["width_km"]
+        return self._row["width_km"]  # type: ignore
 
     @property
     def area_km2(self) -> float:
         """Area in square kilometers (length times width)."""
-        return self._row["area_km2"]
+        return self._row["area_km2"]  # type: ignore
 
 
 class FaultSubsectionRuptures:
@@ -160,9 +162,9 @@ class FaultSubsectionRuptures:
         """GeoDataFrame of ruptures involving this subsection.
 
         Columns include all fields from ruptures_parsed plus a merged surface-trace geometry
-        (EPSG:4326), a length_km column giving the total geodesic length, an area_km2
-        column giving the total fault area, and a parent_area_pcts column with a dict mapping
-        each parent fault name to its percentage of the rupture's total area.
+        (EPSG:4326), a length_km column giving the total geodesic length, an area_km2 column giving
+        the total fault area, and a parent_area_pcts column with a dict mapping each parent fault
+        name to its percentage of the rupture's total area.
         """
         all_rups = self._dataset.ruptures_parsed
         mask = all_rups["parsed_indices"].apply(lambda s: self._index in s)
@@ -184,10 +186,23 @@ class FaultSubsectionRuptures:
         )
 
         partic_rups["parent_area_pcts"] = partic_rups["parsed_indices"].apply(
-            lambda s: _parent_area_pcts(s, lookup["area_km2"], lookup["parent_name"])
+            lambda s: _parent_area_pcts(s, lookup["area_km2"], lookup["parent_name"])  # type: ignore
         )
 
-        return gpd.GeoDataFrame(partic_rups, geometry=geometries, crs="EPSG:4326")
+        return gpd.GeoDataFrame(partic_rups, geometry=geometries, crs="EPSG:4326")  # type: ignore
+
+    @cached_property
+    def cumulative_mfd(self) -> pd.DataFrame:
+        """Cumulative magnitude frequency distribution for participating ruptures.
+
+        Returns a DataFrame with columns ``magnitude`` (unique values, sorted ascending) and
+        ``cumulative_rate`` (exceedance rate, i.e. sum of rates for all ruptures at or above each
+        magnitude).
+        """
+        grouped = self.participating_ruptures.groupby("m")["rate"].sum()
+        magnitude = grouped.index.to_numpy()
+        cumulative_rate = np.cumsum(grouped.to_numpy()[::-1])[::-1]
+        return pd.DataFrame({"magnitude": magnitude, "cumulative_rate": cumulative_rate})
 
 
 class FaultSubsection:

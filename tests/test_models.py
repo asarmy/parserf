@@ -46,7 +46,7 @@ class TestFaultModelDataset:
         assert isinstance(dataset.parent_ids, pd.DataFrame)
 
     def test_parent_ids_has_expected_columns(self, dataset):
-        expected = {"name", "parent_id", "parent_name"}
+        expected = {"parent_id", "parent_name"}
         assert expected == set(dataset.parent_ids.columns)
 
     def test_ruptures_parsed_is_dataframe(self, dataset):

@@ -51,7 +51,7 @@ class FaultModelDataset:
         model: The fault model version.
 
     Attributes:
-        parent_ids: DataFrame containing fault names and their parent IDs.
+        parent_ids: DataFrame with columns ``parent_id`` (int) and ``parent_name`` (str).
         sections: GeoDataFrame of fault subsections with geometry and metadata.
         ruptures_parsed: Rupture data with parsed subsection indices as sets of integers.
 

@@ -2,6 +2,7 @@
 
 import geopandas as gpd
 import numpy as np
+import pandas as pd
 import pyproj
 import pytest
 from shapely import LineString, MultiLineString
@@ -154,6 +155,42 @@ class TestParticipatingRuptures:
 
     def test_crs(self, sub_0):
         assert sub_0.ruptures.participating_ruptures.crs.to_epsg() == 4326
+
+
+class TestCumulativeMFD:
+    def test_is_dataframe(self, sub_0):
+        assert isinstance(sub_0.ruptures.cumulative_mfd, pd.DataFrame)
+
+    def test_has_expected_columns(self, sub_0):
+        assert list(sub_0.ruptures.cumulative_mfd.columns) == ["magnitude", "cumulative_rate"]
+
+    def test_not_empty(self, sub_0):
+        assert len(sub_0.ruptures.cumulative_mfd) > 0
+
+    def test_magnitudes_sorted_ascending(self, sub_0):
+        mags = sub_0.ruptures.cumulative_mfd["magnitude"].to_numpy()
+        assert (np.diff(mags) >= 0).all()
+
+    def test_cumulative_rates_non_increasing(self, sub_0):
+        rates = sub_0.ruptures.cumulative_mfd["cumulative_rate"].to_numpy()
+        assert (np.diff(rates) <= 0).all()
+
+    def test_first_rate_equals_total(self, sub_0):
+        """First cumulative rate should equal sum of all participating rupture rates."""
+        mfd = sub_0.ruptures.cumulative_mfd
+        total_rate = sub_0.ruptures.participating_ruptures["rate"].sum()
+        assert mfd["cumulative_rate"].iloc[0] == pytest.approx(total_rate)
+
+    def test_magnitudes_are_unique(self, sub_0):
+        mfd = sub_0.ruptures.cumulative_mfd
+        assert mfd["magnitude"].nunique() == len(mfd)
+
+    def test_last_rate_equals_largest_mag_rate(self, sub_0):
+        """Last cumulative rate should equal the sum of rates at the largest magnitude."""
+        mfd = sub_0.ruptures.cumulative_mfd
+        rups = sub_0.ruptures.participating_ruptures
+        max_mag_rate = rups.loc[rups["m"] == rups["m"].max(), "rate"].sum()
+        assert mfd["cumulative_rate"].iloc[-1] == pytest.approx(max_mag_rate)
 
 
 class TestFaultSubsectionMultipleModels:

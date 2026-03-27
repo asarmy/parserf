@@ -2,9 +2,8 @@
 
 For each fault model data directory:
 - Load sections.geojson and extract name and parent-id columns
-- Strip trailing section index suffixes like (0), (1) from name
-- Derive parent_name (same as name, preserving bracket indices like [1])
-- Save as parent_id.csv in the corresponding DerivedData subdirectory
+- Strip trailing section index suffixes like (0), (1) from name to derive parent_name
+- Save parent_id and parent_name as parent_id.csv in the corresponding DerivedData subdirectory
 
 Usage
 -----
@@ -47,15 +46,12 @@ for folder in sorted(raw_dir.iterdir()):
     parent_ids_df = gdf[["name", "parent-id"]].copy()
     parent_ids_df = parent_ids_df.rename(columns={"parent-id": "parent_id"})
 
-    # Strip section index suffix like (0), (1), etc.
-    parent_ids_df["name"] = (
+    # Strip section index suffix like (0), (1), etc. to get the parent fault name
+    parent_ids_df["parent_name"] = (
         parent_ids_df["name"].str.replace(r"\s*\(\d+\)\s*$", "", regex=True).str.strip()
     )
 
-    parent_ids_df = parent_ids_df.drop_duplicates()
-
-    # parent_name is the same as name (section index suffixes already stripped above)
-    parent_ids_df["parent_name"] = parent_ids_df["name"]
+    parent_ids_df = parent_ids_df.drop(columns=["name"]).drop_duplicates()
 
     out_dir = derived_dir / folder.name
     out_dir.mkdir(parents=True, exist_ok=True)
