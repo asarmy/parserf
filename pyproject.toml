@@ -47,6 +47,7 @@ relative_files = true
 [tool.ruff]
 line-length = 99
 target-version = "py312"
+exclude = ["scratch.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
