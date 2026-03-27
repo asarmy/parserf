@@ -3,6 +3,8 @@
 # TODO: tests take a while to run
 # TODO: FaultSubsectionRuptures needs a cumul_mfd property
 
+# TODO: add some general code artchiteture to claude md to save tokens
+
 #TODO: thinking ahead to ParentFault, it will need:
 # - coordinates (ordered so that dip is correct); how to deal with multilinestrings?
 # - some kind of list of the subsection indices and attributes (e.g., dip, width, etc. for each
