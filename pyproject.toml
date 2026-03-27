@@ -28,7 +28,7 @@ dev = [
   "ruff",
 ]
 examples = [
-  "jupyter",
+  "jupyterlab",
 ]
 
 [project.urls]
