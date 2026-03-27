@@ -23,7 +23,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pre-commit",
-  "pytest",
+  "pytest>=9.0.2",
   "pytest-cov",
   "ruff",
 ]
@@ -41,6 +41,11 @@ package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: tests that load all three fault models (deselect with '-m not slow')",
+]
 
 [tool.coverage.run]
 relative_files = true

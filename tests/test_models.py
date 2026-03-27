@@ -23,6 +23,7 @@ class TestFaultModel:
             FaultModel(999)
 
 
+@pytest.mark.slow
 class TestFaultModelDataset:
     def test_sections_is_geodataframe(self, dataset):
         assert isinstance(dataset.sections, gpd.GeoDataFrame)

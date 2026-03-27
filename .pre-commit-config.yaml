@@ -17,7 +17,7 @@ repos:
     hooks:
       - id: pytest-check
         name: pytest-check
-        entry: uv run pytest
+        entry: uv run pytest -m "not slow"
         language: system
         always_run: true
         files: ^test_

@@ -193,6 +193,7 @@ class TestCumulativeMFD:
         assert mfd["cumulative_rate"].iloc[-1] == pytest.approx(max_mag_rate)
 
 
+@pytest.mark.slow
 class TestFaultSubsectionMultipleModels:
     def test_first_subsection_loads(self, dataset):
         sub = FaultSubsection(dataset, index=0)
