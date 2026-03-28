@@ -31,7 +31,7 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 
-from parserf.utils import parse_indices
+from parserf.utils import _parse_indices
 
 data_dir = Path(__file__).resolve().parent.parent
 raw_dir = data_dir / "RawData"
@@ -95,7 +95,7 @@ for folder in sorted(raw_dir.iterdir()):
     parent_ids = pd.read_csv(parent_ids_path)
 
     # Parse indices and explode to one row per subsection per rupture
-    ruptures["parsed_indices"] = ruptures["indices"].apply(parse_indices)
+    ruptures["parsed_indices"] = ruptures["indices"].apply(_parse_indices)
     exploded = ruptures.explode("parsed_indices", ignore_index=True)
 
     # Map subsection index to parent_id via sections.geojson

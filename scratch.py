@@ -1,24 +1,50 @@
 # Note: this is just a scratch file for testing things out. It should be deleted eventually.
 
-# TODO: tests take a while to run
-# TODO: FaultSubsectionRuptures needs a cumul_mfd property
-
 
 #TODO: thinking ahead to ParentFault, it will need:
 # - coordinates (ordered so that dip is correct); how to deal with multilinestrings?
-# - some kind of list of the subsection indices and attributes (e.g., dip, width, etc. for each
-#   subsection within the parent fault)
-# - cumul mfds for all subsections (columns index, mag, cumul_rate)
+
 #
 
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 from parserf.models import FaultModel, FaultModelDataset
 from parserf.subsection import FaultSubsection, FaultSubsectionData, FaultSubsectionRuptures
 
-dataset = FaultModelDataset(FaultModel.UCERF3_31)
+def parent_pct_cdf(sub):
+    """Return sorted pct values and cumulative probabilities for the subsection's parent fault."""
+    parent = sub.data.parent_name
+    pcts = sub.ruptures.participating_ruptures["parent_area_pcts"].apply(
+        lambda d: d.get(parent, 0.0)
+    ).values
+    sorted_pcts = np.sort(pcts)
+    cdf = np.arange(1, len(sorted_pcts) + 1) / len(sorted_pcts)
+    return sorted_pcts, cdf
 
-sub = FaultSubsection(dataset, index=1126)
+dataset = FaultModelDataset(FaultModel.NSHMP_2023)
+idx = dataset.nearest_index(lat=32.877476, lon=-117.206703)
+
+sub = FaultSubsection(dataset, index=idx)
+
+print(sub.ruptures.cumulative_mfd.head())
+
+# sorted_pcts, cdf = parent_pct_cdf(sub)
+# print(cdf[-200:])
+# print(sorted_pcts[-200:])
+# fig, ax = plt.subplots(figsize=(7, 4))
+# ax.plot(sorted_pcts, cdf, linewidth=1.5)
+# ax.set_xlabel("Parent fault area participation (%)")
+# ax.set_ylabel("Cumulative probability")
+# ax.set_title(f"Parent fault participation CDF — {sub.data.name}")
+# ax.set(xlim=(0, 100), ylim=(0, 1))
+# plt.show()
+
+
+
+
+
 # df1 = sub.ruptures.participating_ruptures
 # df2 = sub.ruptures.cumulative_mfd
 # df1.to_csv("participating_ruptures.csv", index=False)

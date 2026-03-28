@@ -1,7 +1,28 @@
 """Shared utility functions for parserf data processing scripts."""
 
+import numpy as np
+import pandas as pd
 
-def parse_indices(indices_str: str) -> set[int]:
+
+def _cumulative_mfd(ruptures: pd.DataFrame) -> pd.DataFrame:
+    """Compute cumulative magnitude frequency distribution from rupture data.
+
+    Args:
+        ruptures: DataFrame with at least columns ``m`` (magnitude) and ``rate``
+            (annual rate of occurrence).
+
+    Returns:
+        DataFrame with columns ``magnitude`` (unique values, sorted ascending) and
+        ``cumulative_rate`` (exceedance rate, i.e. sum of rates for all ruptures at or above
+        each magnitude).
+    """
+    grouped = ruptures.groupby("m")["rate"].sum()
+    magnitude = grouped.index.to_numpy()
+    cumulative_rate = np.cumsum(grouped.to_numpy()[::-1])[::-1]
+    return pd.DataFrame({"magnitude": magnitude, "cumulative_rate": cumulative_rate})
+
+
+def _parse_indices(indices_str: str) -> set[int]:
     """Parse earthquake rupture forecast scenario rupture index strings.
 
     Converts strings like "2:0-1127:1126" into sets of integers like "{0, 1, 2, 1126, 1127}".
@@ -26,7 +47,7 @@ def parse_indices(indices_str: str) -> set[int]:
     return indices
 
 
-def merge_geometry(parsed_indices, index_to_geom):
+def _merge_geometry(parsed_indices, index_to_geom):
     """Merge fault subsection geometries into a single line geometry.
 
     Args:

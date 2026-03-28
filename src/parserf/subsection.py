@@ -5,11 +5,10 @@ from __future__ import annotations
 from functools import cached_property
 
 import geopandas as gpd
-import numpy as np
 import pandas as pd
 
 from parserf.models import FaultModel, FaultModelDataset
-from parserf.utils import merge_geometry
+from parserf.utils import _cumulative_mfd, _merge_geometry
 
 
 def _parent_area_pcts(
@@ -55,8 +54,8 @@ class FaultSubsectionData:
         name: Subsection name (e.g., "Airport Lake (0)").
         parent_id: Integer ID of the parent fault.
         parent_name: Name of the parent fault.
-        upper_depth: Upper seismogenic depth in km.
-        lower_depth: Lower seismogenic depth in km.
+        upper_depth_km: Upper seismogenic depth in km.
+        lower_depth_km: Lower seismogenic depth in km.
         dip: Fault dip angle in degrees.
         dip_direction: Dip direction in degrees.
         aseismicity: Aseismicity factor (0 to 1).
@@ -97,12 +96,12 @@ class FaultSubsectionData:
         return self._row["parent_name"]  # type: ignore
 
     @property
-    def upper_depth(self) -> float:
+    def upper_depth_km(self) -> float:
         """Upper seismogenic depth in km."""
         return self._row["upper-depth"]  # type: ignore
 
     @property
-    def lower_depth(self) -> float:
+    def lower_depth_km(self) -> float:
         """Lower seismogenic depth in km."""
         return self._row["lower-depth"]  # type: ignore
 
@@ -158,6 +157,26 @@ class FaultSubsectionRuptures:
         self._index = index
 
     @cached_property
+    def _participating_ruptures(self) -> pd.DataFrame:
+        """Ruptures that involve this subsection. Cheap filter only.
+
+        This is shared internal state. Consumers that mutate must ``.copy()`` first.
+        """
+        all_rups = self._dataset.ruptures_parsed
+        mask = all_rups["parsed_indices"].apply(lambda s: self._index in s)
+        return all_rups.loc[mask].reset_index(drop=True)
+
+    @cached_property
+    def cumulative_mfd(self) -> pd.DataFrame:
+        """Cumulative magnitude frequency distribution for participating ruptures.
+
+        Returns a DataFrame with columns ``magnitude`` (unique values, sorted ascending) and
+        ``cumulative_rate`` (exceedance rate, i.e. sum of rates for all ruptures at or above each
+        magnitude).
+        """
+        return _cumulative_mfd(self._participating_ruptures)
+
+    @cached_property
     def participating_ruptures(self) -> gpd.GeoDataFrame:
         """GeoDataFrame of ruptures involving this subsection.
 
@@ -166,15 +185,13 @@ class FaultSubsectionRuptures:
         the total fault area, and a parent_area_pcts column with a dict mapping each parent fault
         name to its percentage of the rupture's total area.
         """
-        all_rups = self._dataset.ruptures_parsed
-        mask = all_rups["parsed_indices"].apply(lambda s: self._index in s)
-        partic_rups = all_rups.loc[mask].reset_index(drop=True)
+        partic_rups = self._participating_ruptures.copy()
 
         table = self._dataset._subsection_table
         lookup = _subsection_lookup_maps(table)
 
         geometries = [
-            merge_geometry(idx, lookup["geometry"]) for idx in partic_rups["parsed_indices"]
+            _merge_geometry(idx, lookup["geometry"]) for idx in partic_rups["parsed_indices"]
         ]
 
         partic_rups["length_km"] = partic_rups["parsed_indices"].apply(
@@ -190,19 +207,6 @@ class FaultSubsectionRuptures:
         )
 
         return gpd.GeoDataFrame(partic_rups, geometry=geometries, crs="EPSG:4326")  # type: ignore
-
-    @cached_property
-    def cumulative_mfd(self) -> pd.DataFrame:
-        """Cumulative magnitude frequency distribution for participating ruptures.
-
-        Returns a DataFrame with columns ``magnitude`` (unique values, sorted ascending) and
-        ``cumulative_rate`` (exceedance rate, i.e. sum of rates for all ruptures at or above each
-        magnitude).
-        """
-        grouped = self.participating_ruptures.groupby("m")["rate"].sum()
-        magnitude = grouped.index.to_numpy()
-        cumulative_rate = np.cumsum(grouped.to_numpy()[::-1])[::-1]
-        return pd.DataFrame({"magnitude": magnitude, "cumulative_rate": cumulative_rate})
 
 
 class FaultSubsection:

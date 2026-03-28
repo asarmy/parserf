@@ -14,7 +14,7 @@ import pandas as pd
 import pyproj
 from shapely.geometry import Point
 
-from parserf.utils import parse_indices
+from parserf.utils import _parse_indices
 
 
 class FaultModel(IntEnum):
@@ -83,6 +83,11 @@ class FaultModelDataset:
         return pd.read_csv(self._derived_data_path / "parent_id.csv")
 
     @cached_property
+    def rake_frequencies(self) -> pd.DataFrame:
+        """Load rake frequency counts for each parent fault."""
+        return pd.read_csv(self._derived_data_path / "rake_frequencies.csv")
+
+    @cached_property
     def sections(self) -> gpd.GeoDataFrame:
         """Load fault subsections for the selected fault model."""
         return gpd.read_file(self._raw_data_path / "sections.geojson", use_arrow=True)
@@ -96,7 +101,7 @@ class FaultModelDataset:
     def ruptures_parsed(self) -> pd.DataFrame:
         """Scenario ruptures with parsed subsection indices as integer sets."""
         df = self._ruptures.copy()
-        df["parsed_indices"] = df["indices"].apply(parse_indices)
+        df["parsed_indices"] = df["indices"].apply(_parse_indices)
         return df
 
     @cached_property
@@ -115,6 +120,23 @@ class FaultModelDataset:
         pid_to_name = self.parent_ids.set_index("parent_id")["parent_name"].to_dict()
         df["parent_name"] = df["parent-id"].map(pid_to_name)
         return df
+
+    def get_parent_id(self, *, name: str) -> int:
+        """Return the integer parent fault ID for a given parent fault name.
+
+        Args:
+            name: The parent fault name (e.g., "Airport Lake").
+
+        Returns:
+            The integer parent fault ID.
+
+        Raises:
+            ValueError: If the parent fault name is not found in the dataset.
+        """
+        match = self.parent_ids.loc[self.parent_ids["parent_name"] == name, "parent_id"]
+        if match.empty:
+            raise ValueError(f"No parent fault with name '{name}' in {self.model.name}")
+        return int(match.iloc[0])
 
     def nearest_index(self, *, lat: float, lon: float) -> int:
         """Return the subsection index closest to a geographic coordinate.

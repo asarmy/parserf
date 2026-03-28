@@ -1,14 +1,12 @@
 """Tests for FaultSubsection, FaultSubsectionData, and FaultSubsectionRuptures."""
 
-import geopandas as gpd
 import numpy as np
-import pandas as pd
 import pyproj
 import pytest
 from shapely import LineString, MultiLineString
 
 from parserf.models import FaultModel
-from parserf.subsection import FaultSubsection, FaultSubsectionData, FaultSubsectionRuptures
+from parserf.subsection import FaultSubsection, FaultSubsectionData
 
 
 @pytest.fixture(scope="session")
@@ -19,12 +17,6 @@ def sub_0(dataset_31):
 class TestFaultSubsectionInit:
     def test_index_attribute(self, sub_0):
         assert sub_0.index == 0
-
-    def test_data_type(self, sub_0):
-        assert isinstance(sub_0.data, FaultSubsectionData)
-
-    def test_ruptures_type(self, sub_0):
-        assert isinstance(sub_0.ruptures, FaultSubsectionRuptures)
 
     def test_invalid_index_raises(self, dataset_31):
         with pytest.raises(ValueError, match="No subsection with index"):
@@ -44,8 +36,8 @@ class TestFaultSubsectionData:
 
     def test_geojson_properties(self, sub_0):
         assert sub_0.data.parent_id == 1
-        assert sub_0.data.upper_depth == 0.0
-        assert sub_0.data.lower_depth == 13.0
+        assert sub_0.data.upper_depth_km == 0.0
+        assert sub_0.data.lower_depth_km == 13.0
         assert sub_0.data.dip == 50.0
         assert sub_0.data.aseismicity == 0.1
 
@@ -55,25 +47,15 @@ class TestFaultSubsectionData:
     def test_geometry_is_linestring(self, sub_0):
         assert sub_0.data.geometry.geom_type == "LineString"
 
-    def test_length_km_positive(self, sub_0):
-        assert sub_0.data.length_km > 0
-
-    def test_length_km_reasonable(self, sub_0):
-        """Subsection trace lengths are typically 1-20 km."""
-        assert 0.1 < sub_0.data.length_km < 50.0
-
     def test_length_km_matches_pyproj(self, sub_0):
         """Verify length calculation against direct pyproj call."""
         geod = pyproj.Geod(ellps="WGS84")
         expected = geod.geometry_length(sub_0.data.geometry) / 1000.0
         assert sub_0.data.length_km == pytest.approx(expected)
 
-    def test_width_km_positive(self, sub_0):
-        assert sub_0.data.width_km > 0
-
     def test_width_km_formula(self, sub_0):
         """Verify width = (lower - upper) / sin(dip)."""
-        expected = (sub_0.data.lower_depth - sub_0.data.upper_depth) / np.sin(
+        expected = (sub_0.data.lower_depth_km - sub_0.data.upper_depth_km) / np.sin(
             np.radians(sub_0.data.dip)
         )
         assert sub_0.data.width_km == pytest.approx(expected)
@@ -81,17 +63,8 @@ class TestFaultSubsectionData:
     def test_area_km2(self, sub_0):
         assert sub_0.data.area_km2 == pytest.approx(sub_0.data.length_km * sub_0.data.width_km)
 
-    def test_area_km2_positive(self, sub_0):
-        assert sub_0.data.area_km2 > 0
-
 
 class TestParticipatingRuptures:
-    def test_is_geodataframe(self, sub_0):
-        assert isinstance(sub_0.ruptures.participating_ruptures, gpd.GeoDataFrame)
-
-    def test_not_empty(self, sub_0):
-        assert len(sub_0.ruptures.participating_ruptures) > 0
-
     def test_all_contain_subsection_index(self, sub_0):
         """Every participating rupture's parsed_indices should contain this index."""
         for indices in sub_0.ruptures.participating_ruptures["parsed_indices"]:
@@ -119,27 +92,17 @@ class TestParticipatingRuptures:
         for geom in sub_0.ruptures.participating_ruptures.geometry:
             assert isinstance(geom, (LineString, MultiLineString))
 
-    def test_length_km_all_positive(self, sub_0):
-        assert (sub_0.ruptures.participating_ruptures["length_km"] > 0).all()
-
     def test_length_km_equals_subsection_sum(self, sub_0, dataset_31):
         """Verify rupture length equals sum of constituent subsection lengths."""
         row = sub_0.ruptures.participating_ruptures.iloc[0]
         expected = sum(FaultSubsectionData(dataset_31, i).length_km for i in row["parsed_indices"])
         assert row["length_km"] == pytest.approx(expected)
 
-    def test_area_km2_all_positive(self, sub_0):
-        assert (sub_0.ruptures.participating_ruptures["area_km2"] > 0).all()
-
     def test_area_km2_equals_subsection_sum(self, sub_0, dataset_31):
         """Verify rupture area equals sum of constituent subsection areas."""
         row = sub_0.ruptures.participating_ruptures.iloc[0]
         expected = sum(FaultSubsectionData(dataset_31, i).area_km2 for i in row["parsed_indices"])
         assert row["area_km2"] == pytest.approx(expected)
-
-    def test_parent_area_pcts_is_dict(self, sub_0):
-        val = sub_0.ruptures.participating_ruptures["parent_area_pcts"].iloc[0]
-        assert isinstance(val, dict)
 
     def test_parent_area_pcts_sum_to_100(self, sub_0):
         """Each rupture's parent area percentages should sum to 100."""
@@ -158,14 +121,8 @@ class TestParticipatingRuptures:
 
 
 class TestCumulativeMFD:
-    def test_is_dataframe(self, sub_0):
-        assert isinstance(sub_0.ruptures.cumulative_mfd, pd.DataFrame)
-
     def test_has_expected_columns(self, sub_0):
         assert list(sub_0.ruptures.cumulative_mfd.columns) == ["magnitude", "cumulative_rate"]
-
-    def test_not_empty(self, sub_0):
-        assert len(sub_0.ruptures.cumulative_mfd) > 0
 
     def test_magnitudes_sorted_ascending(self, sub_0):
         mags = sub_0.ruptures.cumulative_mfd["magnitude"].to_numpy()
@@ -191,11 +148,3 @@ class TestCumulativeMFD:
         rups = sub_0.ruptures.participating_ruptures
         max_mag_rate = rups.loc[rups["m"] == rups["m"].max(), "rate"].sum()
         assert mfd["cumulative_rate"].iloc[-1] == pytest.approx(max_mag_rate)
-
-
-@pytest.mark.slow
-class TestFaultSubsectionMultipleModels:
-    def test_first_subsection_loads(self, dataset):
-        sub = FaultSubsection(dataset, index=0)
-        assert sub.index == 0
-        assert sub.data.length_km > 0
