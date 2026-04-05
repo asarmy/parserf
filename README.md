@@ -6,9 +6,17 @@ Library for parsing earthquake rupture forecast (ERF) datasets.
 
 ## Original Data Sources
 
+### Faults
+
 - [UCERF3](https://code.usgs.gov/ghsc/nshmp/nshms/nshm-conus/-/tree/5.3-maint/active-crust/fault/CA/ucerf3)
 
 - [nshm-conus-v6.0.0](https://code.usgs.gov/ghsc/nshmp/nshms/nshm-conus/-/tree/6.0.0/active-crust/fault/wus-system/branch-avg)
+
+### Background grids
+
+- [UCERF3](https://code.usgs.gov/ghsc/nshmp/nshms/nshm-conus/-/tree/5.3-maint/active-crust/grid/grid-data?ref_type=heads)
+
+- [nshm-conus-v6.0.0](https://code.usgs.gov/ghsc/nshmp/nshms/nshm-conus/-/tree/6.0.0/active-crust/grid/grid-data?ref_type=tags)
 
 ## Derived Data
 

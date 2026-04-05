@@ -35,6 +35,12 @@ _VERSION_MAP = {
     FaultModel.UCERF3_32: "fault-model-3.2",
 }
 
+_GRID_FILE_MAP = {
+    FaultModel.NSHMP_2023: "branch-avg-grid.csv",
+    FaultModel.UCERF3_31: "ucerf3-fm-3.1.csv",
+    FaultModel.UCERF3_32: "ucerf3-fm-3.2.csv",
+}
+
 
 @dataclass(frozen=True)
 class FaultModelDataset:
@@ -55,6 +61,8 @@ class FaultModelDataset:
         subsections: DataFrame of fault subsections indexed by ``index`` (int) with columns for
             geometry, dimensions, and parent fault info.
         ruptures: Rupture data with parsed subsection indices as sets of integers.
+        grid: DataFrame of background gridded seismicity with columns ``lon``, ``lat``, ``ss_wt``,
+            ``r_wt``, ``n_wt``, and magnitude bin annual rates.
 
     Methods:
         get_parent_fault_id(name=...): Resolve a parent fault name to its integer ID.
@@ -90,6 +98,11 @@ class FaultModelDataset:
     def rake_frequencies(self) -> pd.DataFrame:
         """Load rake frequency counts for each parent fault in the selected model."""
         return pd.read_csv(self._derived_data_path / "rake_frequencies.csv")
+
+    @cached_property
+    def grid(self) -> pd.DataFrame:
+        """Background gridded seismicity rates for the selected fault model."""
+        return pd.read_csv(self._raw_data_path / _GRID_FILE_MAP[self.model])
 
     @cached_property
     def _sections(self) -> gpd.GeoDataFrame:
