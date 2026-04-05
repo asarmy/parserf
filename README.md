@@ -32,7 +32,7 @@ Library for parsing earthquake rupture forecast (ERF) datasets.
 
 ## Data Layer
 
-- `FaultModelDataset` (`models.py`) is the data access layer: it encapsulates each fault model and provides cached access to raw and derived tables (`subsections`, `ruptures`, `parent_ids`, `rake_frequencies`). It internally consolidates per-subsection data (geometry, computed dimensions, and parent fault names) as the single source of truth for the view and query layers below. It also provides `get_parent_fault_id(name=...)` for resolving parent fault names to integer IDs.
+- `FaultModelDataset` (`models.py`) is the data access layer: it encapsulates each fault model and provides cached access to raw and derived tables (`subsections`, `ruptures`, `parent_ids`, `rake_frequencies`, `grid`). It internally consolidates per-subsection data (geometry, computed dimensions, and parent fault names) as the single source of truth for the view and query layers below. It also provides `get_parent_fault_id(name=...)` for resolving parent fault names to integer IDs. The `grid` property lazily loads background gridded seismicity rates (lon, lat, faulting style weights, and annual rates per magnitude bin).
 
 ## Queries
 
@@ -52,12 +52,15 @@ Library for parsing earthquake rupture forecast (ERF) datasets.
 
 - `ParentFaultRuptures` is a dataset-backed view of the ruptures that any subsection of the parent fault participates in, including a breakdown of the contribution of each parent fault (by area, in percent) to the rupture scenario. The view is provided with `participating_ruptures` in exploded form and `cumulative_mfds` provides a DataFrame of cumulative magnitude frequency distributions for each child subsection with columns `index`, `magnitude`, and `cumulative_rate`. Use this when you only need rupture information for a parent fault.
 
-## Batch Parent Fault Selection
+## Batch Selection
 
 - `ParentSelection` (`selection.py`) provides efficient batch access to parent fault data and ruptures. It takes a dataset and a list of parent fault IDs (e.g., from `get_parents_list()`), and exposes:
   - `.subsections` — all subsections for the selected parents (full extent)
   - `.parents` — per-parent summary GeoDataFrame with `style` and `geometry` (oriented surface trace)
   - `.ruptures` — enriched GeoDataFrame in exploded form: one row per (rupture, parent) pair with `parent_id` and `area_pct` columns. The `rate` column is the full rupture rate; multiply by `area_pct / 100` for the parent-attributed rate. All parent contributions for each rupture are included (not just selected parents), so `area_pct` values sum to 100 per rupture.
+
+- `GridSelection` (`selection.py`) filters background gridded seismicity to points within a geodesic distance of a site. It takes a dataset, site coordinates, and a search radius, and exposes:
+  - `.grid` — DataFrame of grid points within the radius, sorted nearest-first, with an added `dist_km` column.
 
 # Credits
 

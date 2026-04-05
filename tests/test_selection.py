@@ -1,8 +1,8 @@
-"""Tests for ParentSelection."""
+"""Tests for ParentSelection and GridSelection."""
 
 import pytest
 
-from parserf.selection import ParentSelection
+from parserf.selection import GridSelection, ParentSelection
 
 
 @pytest.fixture(scope="session")
@@ -38,3 +38,14 @@ class TestParentSelection:
                 assert pytest.approx(group["area_pct"].sum(), abs=0.01) == 100.0
                 break
         assert found, "Expected at least one rupture with a non-selected parent"
+
+
+@pytest.mark.slow
+class TestGridSelection:
+    def test_all_points_within_radius(self, dataset_31):
+        dist_km = 50
+        gs = GridSelection(dataset_31, lat=34.05, lon=-118.25, dist_km=dist_km)
+        grid = gs.grid
+        assert len(grid) > 0
+        assert (grid["dist_km"] <= dist_km).all()
+        assert grid["dist_km"].is_monotonic_increasing

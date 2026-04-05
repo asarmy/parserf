@@ -5,7 +5,9 @@ from __future__ import annotations
 from functools import cached_property
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
+import pyproj
 
 from parserf._utils import _parent_style, _parent_surface_trace, _RuptureSet
 from parserf.models import FaultModelDataset
@@ -112,3 +114,53 @@ class ParentSelection:
         ``parent_id`` to isolate specific parents.
         """
         return self._rupture_set.participating_ruptures
+
+
+class GridSelection:
+    """Scoped view of background gridded seismicity within a radius of a site.
+
+    Filters ``dataset.grid`` to grid points within a geodesic distance of the given coordinate.
+
+    Args:
+        dataset: The fault model dataset backing this view.
+        lat: Site latitude in decimal degrees.
+        lon: Site longitude in decimal degrees.
+        dist_km: Search radius in kilometers.
+
+    Examples:
+        >>> from parserf.models import FaultModel, FaultModelDataset
+        >>> from parserf.selection import GridSelection
+        >>> ds = FaultModelDataset(FaultModel.UCERF3_31)
+        >>> gs = GridSelection(ds, lat=34.05, lon=-118.25, dist_km=50)
+        >>> gs.grid
+        ...
+    """
+
+    def __init__(
+        self, dataset: FaultModelDataset, *, lat: float, lon: float, dist_km: float
+    ) -> None:
+        self._dataset = dataset
+        self._lat = lat
+        self._lon = lon
+        self._dist_km = dist_km
+
+    @cached_property
+    def grid(self) -> pd.DataFrame:
+        """Grid points within the search radius, sorted by distance (nearest first).
+
+        Returns the subset of ``dataset.grid`` with an additional ``dist_km`` column indicating
+        geodesic distance from the site to each grid point.
+        """
+        df = self._dataset.grid
+        geod = pyproj.Geod(ellps="WGS84")
+        _, _, dist_m = geod.inv(
+            np.full(len(df), self._lon),
+            np.full(len(df), self._lat),
+            df["lon"].values,
+            df["lat"].values,
+        )
+        dist_km = dist_m / 1000.0
+        mask = dist_km <= self._dist_km
+        result = df.loc[mask].copy()
+        result["dist_km"] = dist_km[mask]
+        return result.sort_values("dist_km").reset_index(drop=True)

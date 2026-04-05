@@ -8,7 +8,7 @@ from parserf.queries import (
     get_ruptures_near,
     get_subsections_list,
 )
-from parserf.selection import ParentSelection
+from parserf.selection import GridSelection, ParentSelection
 from parserf.subsection import FaultSubsection, FaultSubsectionData, FaultSubsectionRuptures
 
 __all__ = [
@@ -20,6 +20,7 @@ __all__ = [
     "ParentFault",
     "ParentFaultData",
     "ParentFaultRuptures",
+    "GridSelection",
     "ParentSelection",
     "get_nearest_subsection_index",
     "get_parents_list",
