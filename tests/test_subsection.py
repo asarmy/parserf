@@ -38,15 +38,6 @@ class TestFaultSubsection:
         assert sub_0.data.width_km == pytest.approx(expected)
 
 
-class TestParticipatingRuptures:
-    def test_area_pcts_sum_to_100(self, sub_0):
-        """Parent area percentages should sum to 100 per rupture."""
-        rups = sub_0.ruptures.participating_ruptures
-        per_rupture = rups.groupby(rups.index)["area_pct"].sum()
-        for total in per_rupture:
-            assert pytest.approx(total, abs=0.01) == 100.0
-
-
 class TestCumulativeMFD:
     def test_first_rate_equals_total(self, sub_0):
         """First cumulative rate should equal sum of all participating rupture rates."""

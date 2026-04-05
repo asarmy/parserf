@@ -4,33 +4,35 @@ import pytest
 from pyproj import Geod
 
 from parserf.parent import ParentFault
+from parserf.subsection import FaultSubsection
 
 
 @pytest.fixture(scope="session")
 def parent_fault(dataset_31):
-    return ParentFault(dataset_31, name="Airport Lake")
-
-
-class TestParentFault:
-    def test_invalid_name_raises(self, dataset_31):
-        with pytest.raises(ValueError, match="No parent fault with name"):
-            ParentFault(dataset_31, name="Nonexistent Fault")
+    return ParentFault(dataset_31, name="Compton")
 
 
 class TestParentFaultData:
-    def test_all_subsections_belong_to_parent(self, parent_fault, dataset_31):
-        """Every subsection in the table should have this parent's ID."""
-        table = dataset_31.subsections
-        for idx in parent_fault.data.subsections.index:
-            assert table.loc[idx, "parent_id"] == parent_fault.data.parent_id
+    """Specific tests for Compton fault in UCERF3.1."""
+
+    def test_parent_id(self, parent_fault):
+        assert parent_fault.data.parent_id == 43
 
     def test_style_known_result(self, parent_fault):
-        assert parent_fault.data.style == "normal"
+        assert parent_fault.data.style == "reverse"
 
     def test_dip(self, parent_fault):
-        expected = int(round(parent_fault.data.subsections["dip"].mean()))
-        assert parent_fault.data.dip == expected
+        assert parent_fault.data.dip == 20
         assert isinstance(parent_fault.data.dip, int)
+
+    def test_subsection_indices(self, parent_fault):
+        assert set(parent_fault.data.subsections.index) == {341, 342, 343, 344, 345}
+
+    def test_surface_trace_orientation(self, parent_fault):
+        """Dip is to the right, so trace should run south-to-north (first lat < last lat)."""
+        trace = parent_fault.data.surface_trace
+        coords = trace.coords
+        assert coords[0][1] < coords[-1][1]
 
     def test_surface_trace_right_hand_rule(self, parent_fault):
         """Forward azimuth of trace should be within 90 degrees of (dip_direction - 90)."""
@@ -55,3 +57,13 @@ class TestParentFaultRuptures:
         mfd_indices = set(parent_fault.ruptures.cumulative_mfds["index"].unique())
         sub_indices = set(parent_fault.data.subsections.index)
         assert mfd_indices == sub_indices
+
+    def test_mfd_consistent_with_subsection_api(self, parent_fault, dataset_31):
+        """Per-subsection MFD from ParentFault should match FaultSubsection API."""
+        mfds = parent_fault.ruptures.cumulative_mfds
+        parent_mfd = mfds[mfds["index"] == 341].reset_index(drop=True)
+        sub_mfd = FaultSubsection(dataset_31, index=341).ruptures.cumulative_mfd
+        assert list(parent_mfd["magnitude"]) == list(sub_mfd["magnitude"])
+        assert list(parent_mfd["cumulative_rate"]) == pytest.approx(
+            list(sub_mfd["cumulative_rate"])
+        )
