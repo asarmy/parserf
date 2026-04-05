@@ -7,42 +7,14 @@ from functools import cached_property
 import geopandas as gpd
 import pandas as pd
 
+from parserf._utils import _RuptureSet
 from parserf.models import FaultModel, FaultModelDataset
-from parserf.utils import _cumulative_mfd, _merge_geometry
-
-
-def _parent_area_pcts(
-    parsed_indices: set[int],
-    index_to_area: dict[int, float],
-    index_to_parent: dict[int, str],
-) -> dict[str, float]:
-    """Compute area percentage contribution by parent fault name for a rupture."""
-    parent_areas: dict[str, float] = {}
-    for i in parsed_indices:
-        if i in index_to_area and i in index_to_parent:
-            name = index_to_parent[i]
-            parent_areas[name] = parent_areas.get(name, 0.0) + index_to_area[i]
-    total = sum(parent_areas.values())
-    if total == 0:
-        return {}
-    return {k: v / total * 100.0 for k, v in parent_areas.items()}
-
-
-def _subsection_lookup_maps(table):
-    """Build fast index-keyed lookup dicts from a subsection table."""
-    return {
-        "geometry": table["geometry"].to_dict(),
-        "length_km": table["length_km"].to_dict(),
-        "area_km2": table["area_km2"].to_dict(),
-        "parent_name": table["parent_name"].to_dict(),
-    }
 
 
 class FaultSubsectionData:
     """Dataset-backed view of a single subsection's local attributes.
 
-    All values are read from the dataset's internal subsection cache; nothing is
-    recomputed.
+    All values are read from the dataset's internal subsection cache; nothing is recomputed.
 
     Args:
         dataset: The fault model dataset backing this view.
@@ -65,10 +37,11 @@ class FaultSubsectionData:
         area_km2: Fault area in km².
     """
 
-    def __init__(self, dataset: FaultModelDataset, index: int) -> None:
+    def __init__(self, dataset: FaultModelDataset, *, index: int) -> None:
+        dataset._validate_index(index)
         self._dataset = dataset
         self._index = index
-        self._row = dataset._subsection_table.loc[index]
+        self._row = dataset.subsections.loc[index]
 
     @property
     def fault_model(self) -> FaultModel:
@@ -88,7 +61,7 @@ class FaultSubsectionData:
     @property
     def parent_id(self) -> int:
         """Integer ID of the parent fault."""
-        return self._row["parent-id"]  # type: ignore
+        return self._row["parent_id"]  # type: ignore
 
     @property
     def parent_name(self) -> str:
@@ -98,12 +71,12 @@ class FaultSubsectionData:
     @property
     def upper_depth_km(self) -> float:
         """Upper seismogenic depth in km."""
-        return self._row["upper-depth"]  # type: ignore
+        return self._row["upper_depth_km"]  # type: ignore
 
     @property
     def lower_depth_km(self) -> float:
         """Lower seismogenic depth in km."""
-        return self._row["lower-depth"]  # type: ignore
+        return self._row["lower_depth_km"]  # type: ignore
 
     @property
     def dip(self) -> float:
@@ -113,7 +86,7 @@ class FaultSubsectionData:
     @property
     def dip_direction(self) -> float:
         """Dip direction in degrees."""
-        return self._row["dip-direction"]  # type: ignore
+        return self._row["dip_direction"]  # type: ignore
 
     @property
     def aseismicity(self) -> float:
@@ -152,61 +125,32 @@ class FaultSubsectionRuptures:
         participating_ruptures: GeoDataFrame of ruptures involving this subsection.
     """
 
-    def __init__(self, dataset: FaultModelDataset, index: int) -> None:
-        self._dataset = dataset
-        self._index = index
-
-    @cached_property
-    def _participating_ruptures(self) -> pd.DataFrame:
-        """Ruptures that involve this subsection. Cheap filter only.
-
-        This is shared internal state. Consumers that mutate must ``.copy()`` first.
-        """
-        all_rups = self._dataset.ruptures_parsed
-        mask = all_rups["parsed_indices"].apply(lambda s: self._index in s)
-        return all_rups.loc[mask].reset_index(drop=True)
+    def __init__(self, dataset: FaultModelDataset, *, index: int) -> None:
+        dataset._validate_index(index)
+        self._rupture_set = _RuptureSet(dataset, frozenset({index}))
 
     @cached_property
     def cumulative_mfd(self) -> pd.DataFrame:
         """Cumulative magnitude frequency distribution for participating ruptures.
 
-        Returns a DataFrame with columns ``magnitude`` (unique values, sorted ascending) and
-        ``cumulative_rate`` (exceedance rate, i.e. sum of rates for all ruptures at or above each
-        magnitude).
+        Returns a DataFrame with columns ``magnitude`` (sorted ascending) and ``cumulative_rate``
+        (exceedance rate, i.e. sum of rates for all ruptures at or above each magnitude).
         """
-        return _cumulative_mfd(self._participating_ruptures)
+        return self._rupture_set.cumulative_mfd
 
     @cached_property
     def participating_ruptures(self) -> gpd.GeoDataFrame:
         """GeoDataFrame of ruptures involving this subsection.
 
-        Columns include all fields from ruptures_parsed plus a merged surface-trace geometry
-        (EPSG:4326), a length_km column giving the total geodesic length, an area_km2 column giving
-        the total fault area, and a parent_area_pcts column with a dict mapping each parent fault
-        name to its percentage of the rupture's total area.
+        Returns a GeoDataFrame (EPSG:4326) in exploded form: one row per (rupture, parent) pair
+        with ``parent_id`` and ``area_pct`` columns, plus merged geometry, ``length_km``, and
+        ``area_km2``. The ``rate`` column is the full rupture rate; multiply by ``area_pct / 100``
+        for the parent-attributed rate.
+
+        All parent contributions for each rupture are included, not just the queried subsection's
+        parent. This preserves interpretable ``area_pct`` values that sum to 100 per rupture.
         """
-        partic_rups = self._participating_ruptures.copy()
-
-        table = self._dataset._subsection_table
-        lookup = _subsection_lookup_maps(table)
-
-        geometries = [
-            _merge_geometry(idx, lookup["geometry"]) for idx in partic_rups["parsed_indices"]
-        ]
-
-        partic_rups["length_km"] = partic_rups["parsed_indices"].apply(
-            lambda s: sum(lookup["length_km"][i] for i in s if i in lookup["length_km"])
-        )
-
-        partic_rups["area_km2"] = partic_rups["parsed_indices"].apply(
-            lambda s: sum(lookup["area_km2"][i] for i in s if i in lookup["area_km2"])
-        )
-
-        partic_rups["parent_area_pcts"] = partic_rups["parsed_indices"].apply(
-            lambda s: _parent_area_pcts(s, lookup["area_km2"], lookup["parent_name"])  # type: ignore
-        )
-
-        return gpd.GeoDataFrame(partic_rups, geometry=geometries, crs="EPSG:4326")  # type: ignore
+        return self._rupture_set.participating_ruptures
 
 
 class FaultSubsection:
@@ -234,23 +178,23 @@ class FaultSubsection:
     """
 
     def __init__(self, dataset: FaultModelDataset, *, index: int) -> None:
-        if index not in dataset._subsection_table.index:
-            raise ValueError(f"No subsection with index {index} in {dataset.model.name}")
+        dataset._validate_index(index)
         self._dataset = dataset
         self.index = index
+        self._name = dataset.subsections.loc[index, "name"]
 
     def __repr__(self) -> str:
         return (
             f"FaultSubsection(fault_model={self._dataset.model.name}, "
-            f"index={self.index}, name='{self.data.name}')"
+            f"index={self.index}, name='{self._name}')"
         )
 
     @cached_property
     def data(self) -> FaultSubsectionData:
         """Subsection-local attributes and geometry."""
-        return FaultSubsectionData(self._dataset, self.index)
+        return FaultSubsectionData(self._dataset, index=self.index)
 
     @cached_property
     def ruptures(self) -> FaultSubsectionRuptures:
         """Rupture participation data."""
-        return FaultSubsectionRuptures(self._dataset, self.index)
+        return FaultSubsectionRuptures(self._dataset, index=self.index)

@@ -31,7 +31,7 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 
-from parserf.utils import _parse_indices
+from parserf._utils import _parse_indices
 
 data_dir = Path(__file__).resolve().parent.parent
 raw_dir = data_dir / "RawData"

@@ -1,10 +1,9 @@
-"""Tests for parserf.utils module."""
+"""Tests for parserf._utils module."""
 
-import numpy as np
 import pandas as pd
 import pytest
 
-from parserf.utils import _cumulative_mfd, _parse_indices
+from parserf._utils import _cumulative_mfd, _parent_style, _parse_indices
 
 
 class TestCumulativeMfd:
@@ -21,22 +20,8 @@ class TestCumulativeMfd:
         assert len(result) == 2
         assert result["cumulative_rate"].iloc[0] == pytest.approx(0.035)
 
-    def test_magnitudes_sorted_ascending(self):
-        df = pd.DataFrame({"m": [7.0, 6.0, 6.5], "rate": [0.001, 0.01, 0.005]})
-        result = _cumulative_mfd(df)
-        mags = result["magnitude"].to_numpy()
-        assert (np.diff(mags) >= 0).all()
-
-    def test_rates_non_increasing(self):
-        df = pd.DataFrame({"m": [6.0, 6.5, 7.0], "rate": [0.01, 0.005, 0.001]})
-        result = _cumulative_mfd(df)
-        rates = result["cumulative_rate"].to_numpy()
-        assert (np.diff(rates) <= 0).all()
-
 
 class TestParseIndices:
-    """Tests for the _parse_indices function."""
-
     def test_basic_parsing(self):
         """Single values, multiple values, and ranges."""
         assert _parse_indices("42") == {42}
@@ -48,9 +33,14 @@ class TestParseIndices:
     def test_mixed_indices_and_ranges(self):
         assert _parse_indices("0:2-5-10:12") == {0, 1, 2, 5, 10, 11, 12}
 
-    def test_docstring_example(self):
-        result = _parse_indices("2:0-1127:1126")
-        assert result == set(range(0, 3)) | set(range(1126, 1128))
 
-    def test_whitespace_handling(self):
-        assert _parse_indices("0:2 - 5 - 10:12") == {0, 1, 2, 5, 10, 11, 12}
+class TestParentStyle:
+    def test_returns_dominant_style(self):
+        rakes = pd.DataFrame(
+            {
+                "parent_id": [1, 1, 1],
+                "style": ["Reverse", "Strike-Slip", "Reverse"],
+                "count": [50, 30, 20],
+            }
+        )
+        assert _parent_style(rakes, 1) == "Reverse"

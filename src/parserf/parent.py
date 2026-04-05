@@ -4,10 +4,16 @@ from __future__ import annotations
 
 from functools import cached_property
 
+import geopandas as gpd
 import pandas as pd
 
+from parserf._utils import (
+    _parent_style,
+    _parent_style_counts,
+    _parent_surface_trace,
+    _RuptureSet,
+)
 from parserf.models import FaultModel, FaultModelDataset
-from parserf.utils import _cumulative_mfd
 
 
 class ParentFaultData:
@@ -25,10 +31,11 @@ class ParentFaultData:
     """
 
     def __init__(self, dataset: FaultModelDataset, *, parent_id: int) -> None:
+        dataset._validate_parent_id(parent_id)
         self._dataset = dataset
         self._parent_id = parent_id
-        pid_to_name = dataset.parent_ids.set_index("parent_id")["parent_name"]
-        self._name = pid_to_name[parent_id]
+        table = dataset.subsections
+        self._name = table.loc[table["parent_id"] == parent_id, "parent_name"].iloc[0]
 
     @property
     def fault_model(self) -> FaultModel:
@@ -52,15 +59,8 @@ class ParentFaultData:
         Columns include index, name, dip, dip_direction, upper_depth_km, lower_depth_km,
         aseismicity, length_km, width_km, area_km2, and geometry.
         """
-        table = self._dataset._subsection_table
-        df = table.loc[table["parent-id"] == self._parent_id].copy()
-        df = df.rename(
-            columns={
-                "dip-direction": "dip_direction",
-                "upper-depth": "upper_depth_km",
-                "lower-depth": "lower_depth_km",
-            }
-        )
+        table = self._dataset.subsections
+        df = table.loc[table["parent_id"] == self._parent_id].copy()
         columns = [
             "name",
             "dip",
@@ -76,20 +76,46 @@ class ParentFaultData:
         return df[columns].rename_axis("index")
 
     @cached_property
+    def dip(self) -> int:
+        """Representative dip angle in degrees (area-weighted mean of subsections, rounded)."""
+        weights = self.subsections["area_km2"]
+        return int(round((self.subsections["dip"] * weights).sum() / weights.sum()))
+
+    @cached_property
+    def dip_direction(self) -> int:
+        """Representative dip direction in degrees (area-weighted mean of subsections, rounded)."""
+        weights = self.subsections["area_km2"]
+        return int(round((self.subsections["dip_direction"] * weights).sum() / weights.sum()))
+
+    @cached_property
+    def surface_trace(self):
+        """Oriented 2D surface trace of the parent fault as a Shapely LineString.
+
+        Coordinates are oriented such that when walking along the fault trace, the dip direction is
+        to your right (right-hand rule). For vertical faults (dip ~ 90 degrees), the original order
+        is preserved.
+
+        Returns:
+            LineString of the merged, oriented surface trace (EPSG:4326).
+        """
+        return _parent_surface_trace(
+            self.subsections["geometry"].tolist(),
+            self.dip,
+            self.dip_direction,
+        )
+
+    @cached_property
     def style_counts(self) -> pd.DataFrame:
         """Faulting style breakdown by rupture count, sorted descending.
 
         Returns a DataFrame with columns ``style`` and ``count``.
         """
-        rakes = self._dataset.rake_frequencies
-        parent_rakes = rakes.loc[rakes["parent_id"] == self._parent_id]
-        counts = parent_rakes.groupby("style")["count"].sum().reset_index()
-        return counts.sort_values("count", ascending=False).reset_index(drop=True)
+        return _parent_style_counts(self._dataset.rake_frequencies, self._parent_id)
 
     @property
     def style(self) -> str:
         """The most common faulting style by rupture count."""
-        return self.style_counts["style"].iloc[0]
+        return _parent_style(self._dataset.rake_frequencies, self._parent_id)
 
 
 class ParentFaultRuptures:
@@ -101,14 +127,25 @@ class ParentFaultRuptures:
     """
 
     def __init__(self, dataset: FaultModelDataset, *, parent_id: int) -> None:
+        dataset._validate_parent_id(parent_id)
         self._dataset = dataset
-        self._parent_id = parent_id
+        table = dataset.subsections
+        self._subsection_indices = frozenset(table.loc[table["parent_id"] == parent_id].index)
+        self._rupture_set = _RuptureSet(dataset, self._subsection_indices)
 
     @cached_property
-    def _subsection_indices(self) -> list[int]:
-        """Child subsection indices for this parent fault."""
-        table = self._dataset._subsection_table
-        return table.loc[table["parent-id"] == self._parent_id].index.tolist()
+    def participating_ruptures(self) -> gpd.GeoDataFrame:
+        """GeoDataFrame of ruptures involving any child subsection of this parent fault.
+
+        Returns a GeoDataFrame (EPSG:4326) in exploded form: one row per (rupture, parent) pair
+        with ``parent_id`` and ``area_pct`` columns. The ``rate`` column is the full rupture rate;
+        multiply by ``area_pct / 100`` for the parent-attributed rate.
+
+        All parent contributions for each rupture are included, not just this parent fault. This
+        preserves interpretable ``area_pct`` values that sum to 100 per rupture. Filter on
+        ``parent_id`` to isolate this parent's rows.
+        """
+        return self._rupture_set.participating_ruptures
 
     @cached_property
     def cumulative_mfds(self) -> pd.DataFrame:
@@ -117,15 +154,7 @@ class ParentFaultRuptures:
         Returns a DataFrame with columns ``index`` (subsection index), ``magnitude``, and
         ``cumulative_rate``.
         """
-        all_rups = self._dataset.ruptures_parsed
-        frames = []
-        for idx in self._subsection_indices:
-            mask = all_rups["parsed_indices"].apply(lambda s, i=idx: i in s)
-            filtered = all_rups.loc[mask]
-            mfd = _cumulative_mfd(filtered)
-            mfd.insert(0, "index", idx)
-            frames.append(mfd)
-        return pd.concat(frames, ignore_index=True)
+        return self._rupture_set.per_subsection_mfds(self._subsection_indices)
 
 
 class ParentFault:
@@ -155,7 +184,7 @@ class ParentFault:
     def __init__(self, dataset: FaultModelDataset, *, name: str) -> None:
         self._dataset = dataset
         self._name = name
-        self._parent_id = dataset.get_parent_id(name=name)
+        self._parent_id = dataset.get_parent_fault_id(name=name)
 
     def __repr__(self) -> str:
         return (

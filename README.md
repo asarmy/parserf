@@ -22,23 +22,34 @@ Library for parsing earthquake rupture forecast (ERF) datasets.
 
 # Code Architecture
 
-- `FaultModelDataset` is the package's data access layer: it encapsulates each fault model and provides cached access to raw and derived tables such as sections, parent IDs, and ruptures. It internally consolidates per-subsection data (geometry, computed dimensions, and parent fault names) as the single source of truth for the view objects below. It also provides identifier resolution methods: `nearest_index(lat, lon)` for subsection coordinates and `get_parent_id(name)` for parent fault names.
+## Data Layer
 
-## Subsection Classes
+- `FaultModelDataset` (`models.py`) is the data access layer: it encapsulates each fault model and provides cached access to raw and derived tables (`subsections`, `ruptures`, `parent_ids`, `rake_frequencies`). It internally consolidates per-subsection data (geometry, computed dimensions, and parent fault names) as the single source of truth for the view and query layers below. It also provides `get_parent_fault_id(name=...)` for resolving parent fault names to integer IDs.
 
-- `FaultSubsection` is a thin facade that validates a subsection index exists in the dataset and exposes two view objects: `.data` and `.ruptures`. Use this when you need to access data and rupture information for a subsection in one instance.
+## Queries
+
+- `queries.py` contains spatial query functions that all take a `FaultModelDataset` as their first argument: `get_nearest_subsection_index()`, `get_subsections_list()`, `get_parents_list()`, and `get_ruptures_near()`.
+
+## Single-Entity Views
+
+- `FaultSubsection` (`subsection.py`) is a thin facade that validates a subsection index exists in the dataset and exposes two view objects: `.data` and `.ruptures`. Use this when you need to access data and rupture information for a subsection in one instance.
 
 - `FaultSubsectionData` is a dataset-backed view of a single subsection's basic attributes (name, dip, depth, geometry, length, width, area, etc.). Use this when you only need to access these attributes and do not need rupture information.
 
-- `FaultSubsectionRuptures` is a dataset-backed view of a single subsection's rupture participation, providing the `participating_ruptures` GeoDataFrame with merged geometries, lengths, areas, and parent area percentages, and the `cumulative_mfd` DataFrame with magnitude exceedance rates. Use this when you only need to access rupture information and do not need basic attributes.
+- `FaultSubsectionRuptures` is a dataset-backed view of the ruptures that a single subsection participates in, including a breakdown of the contribution of each parent fault (by area, in percent) to the rupture scenario. The view is provided with the `participating_ruptures` GeoDataFrame in exploded form (one row per rupture-parent pair with `parent_id` and `area_pct` columns), and a `cumulative_mfd` DataFrame with magnitude exceedance rates for the subsection. Use this when you only need to access rupture information and do not need basic attributes.
 
-## Parent Fault Classes
+- `ParentFault` (`parent.py`) is a thin facade that validates a parent fault name exists in the dataset and exposes two view objects: `.data` and `.ruptures`. Use this when you need to access data and rupture information for all subsections belonging to a parent fault. It accepts the parent fault name (e.g., `ParentFault(dataset, name="Airport Lake")`) and resolves it to an integer ID internally.
 
-- `ParentFault` is a thin facade that validates a parent fault name exists in the dataset and exposes two view objects: `.data` and `.ruptures`. Use this when you need to access data and rupture information for all subsections belonging to a parent fault. It accepts the parent fault name (e.g., `ParentFault(dataset, name="Airport Lake")`) and resolves it to an integer ID internally.
+- `ParentFaultData` is a dataset-backed view of a parent fault's child subsection attributes (name, dip, depth, geometry, length, width, area, etc.) as a single DataFrame via the `subsections` property. It also provides faulting style information: `style` returns the dominant style (e.g., "normal", "strike-slip") and `style_counts` returns a DataFrame of style breakdowns by rupture count. It also provides a merged, oriented `surface_trace` LineString, oriented such that dip direction is on the right when you progress along the coordinates. Use this when you only need subsection attributes for a parent fault and do not need rupture information.
 
-- `ParentFaultData` is a dataset-backed view of a parent fault's child subsection attributes (name, dip, depth, geometry, length, width, area, etc.) as a single DataFrame via the `subsections` property. It also provides faulting style information: `style` returns the dominant style (e.g., "normal", "strike-slip") and `style_counts` returns a DataFrame of style breakdowns by rupture count. Use this when you only need subsection attributes for a parent fault and do not need rupture information.
+- `ParentFaultRuptures` is a dataset-backed view of the ruptures that any subsection of the parent fault participates in, including a breakdown of the contribution of each parent fault (by area, in percent) to the rupture scenario. The view is provided with `participating_ruptures` in exploded form and `cumulative_mfds` provides a DataFrame of cumulative magnitude frequency distributions for each child subsection with columns `index`, `magnitude`, and `cumulative_rate`. Use this when you only need rupture information for a parent fault.
 
-- `ParentFaultRuptures` is a dataset-backed view of rupture participation across a parent fault's subsections, providing `cumulative_mfds` — a DataFrame of cumulative magnitude frequency distributions for each child subsection with columns `index`, `magnitude`, and `cumulative_rate`. Use this when you only need rupture information for a parent fault.
+## Batch Parent Fault Selection
+
+- `ParentSelection` (`selection.py`) provides efficient batch access to parent fault data and ruptures. It takes a dataset and a list of parent fault IDs (e.g., from `get_parents_list()`), and exposes:
+  - `.subsections` — all subsections for the selected parents (full extent)
+  - `.parents` — per-parent summary GeoDataFrame with `style` and `geometry` (oriented surface trace)
+  - `.ruptures` — enriched GeoDataFrame in exploded form: one row per (rupture, parent) pair with `parent_id` and `area_pct` columns. The `rate` column is the full rupture rate; multiply by `area_pct / 100` for the parent-attributed rate. All parent contributions for each rupture are included (not just selected parents), so `area_pct` values sum to 100 per rupture.
 
 # Credits
 
