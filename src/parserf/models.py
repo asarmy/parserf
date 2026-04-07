@@ -118,6 +118,7 @@ class FaultModelDataset:
     def ruptures(self) -> pd.DataFrame:
         """Scenario ruptures with parsed subsection indices as integer sets."""
         df = self._ruptures.copy()
+        df = df[df["rate"] != 0]
         df["parsed_indices"] = df["indices"].apply(_parse_indices)
         return df
 
