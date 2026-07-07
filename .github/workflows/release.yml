@@ -31,7 +31,20 @@ jobs:
             echo "::error::Release tag ($TAG) != pyproject version ($PKG). Bump pyproject.toml and re-tag."
             exit 1
           fi
+      - name: Check if version already published to PyPI
+        id: check_pypi
+        run: |
+          PKG="$(uv version --short)"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://pypi.org/pypi/parserf/$PKG/json")
+          if [ "$STATUS" = "200" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::parserf $PKG is already on PyPI — skipping build/publish. (Re-publishing a GitHub Release, e.g. to trigger Zenodo, doesn't re-upload to PyPI.)"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build sdist + wheel
+        if: steps.check_pypi.outputs.exists != 'true'
         run: uv build
       - name: Publish to PyPI
+        if: steps.check_pypi.outputs.exists != 'true'
         uses: pypa/gh-action-pypi-publish@release/v1

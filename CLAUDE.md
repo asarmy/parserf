@@ -76,8 +76,8 @@ Add tests only when they are materially useful: they should specify intended beh
 ## Publishing to PyPI
 
 Version is static in `pyproject.toml` (`[project] version`) — bump it manually before every
-release except the first (`1.0.0`). PyPI rejects re-uploading an existing version, so a stale
-version number will fail the release.
+release. PyPI rejects re-uploading an existing version, so a stale version number will fail
+the release. `1.0.0` is already published (first release, 2026-07-07).
 
 Release procedure:
 
