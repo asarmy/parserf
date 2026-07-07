@@ -1,0 +1,37 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --group dev
+      - run: uv run ruff check src/ tests/
+      - run: uv run pytest -q
+
+  publish:
+    needs: test # publish only if tests pass
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # mints the OIDC token PyPI trusts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Verify release tag matches package version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"          # strip optional leading "v"
+          PKG="$(uv version --short)"
+          echo "tag=$TAG  pyproject=$PKG"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Release tag ($TAG) != pyproject version ($PKG). Bump pyproject.toml and re-tag."
+            exit 1
+          fi
+      - name: Build sdist + wheel
+        run: uv build
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

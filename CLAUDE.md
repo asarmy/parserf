@@ -72,3 +72,31 @@ Example:
 ## Tests
 
 Add tests only when they are materially useful: they should specify intended behavior, catch plausible regressions, or document important edge cases. Skip low-value assertions written just to appear thorough.
+
+## Publishing to PyPI
+
+Version is static in `pyproject.toml` (`[project] version`) — bump it manually before every
+release except the first (`1.0.0`). PyPI rejects re-uploading an existing version, so a stale
+version number will fail the release.
+
+Release procedure:
+
+1. Bump `version` in `pyproject.toml`, commit, push to `main`.
+2. Create a GitHub Release with tag `v<version>` (e.g. `v1.2.0`) and publish it.
+3. `.github/workflows/release.yml` runs automatically: a `test` job (ruff + pytest) gates
+   publishing — if tests fail, nothing is published. Then a guard step checks the release tag
+   matches `uv version --short`, failing loudly if they diverge. Then `uv build` and
+   `pypa/gh-action-pypi-publish` upload to PyPI via OIDC trusted publishing (no API
+   token/secret; the PyPI trusted publisher is scoped to environment "Any", so the workflow
+   declares no `environment:`).
+4. The new tag also triggers Read the Docs via its GitHub webhook. An RTD Automation Rule
+   (configured in the RTD dashboard, not in this repo) activates the new version and points
+   `stable`/default at it — no GitHub Action involved.
+
+`.github/workflows/CI.yml` runs ruff + pytest on every push to `main` and PR; it's what the
+CI badge in `README.md` reflects.
+
+Badges in `README.md` (PyPI version, downloads, CI, docs, coverage) only render once their
+preconditions exist: first PyPI publish, first CI run, an RTD build, and — for the coverage
+badge — the repo being public (private repos can't serve `raw.githubusercontent.com` images
+through GitHub's image proxy, so `coverage.svg` embeds are broken while the repo is private).

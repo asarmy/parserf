@@ -1,6 +1,11 @@
 # parserf
 
-![coverage](https://raw.githubusercontent.com/asarmy/parserf/main/coverage.svg)
+[![PyPI version](https://img.shields.io/pypi/v/parserf.svg)](https://pypi.org/project/parserf/)
+[![Downloads](https://static.pepy.tech/badge/parserf)](https://pepy.tech/project/parserf)
+[![Documentation Status](https://readthedocs.org/projects/parserf/badge/?version=latest)](https://parserf.readthedocs.io/en/latest/)
+[![CI](https://github.com/asarmy/parserf/actions/workflows/CI.yml/badge.svg)](https://github.com/asarmy/parserf/actions/workflows/CI.yml)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+![Coverage](https://raw.githubusercontent.com/asarmy/parserf/main/coverage.svg)
 
 **parserf** parses Earthquake Rupture Forecast (ERF) datasets into clean, structured Python
 objects — fault subsections, rupture scenarios, parent faults, and background seismicity. It loads
@@ -208,7 +213,7 @@ use `.explode("contributions")`, then attribute rates with `rate * area_pct / 10
 
 ## Documentation
 
-Full API docs are built with Sphinx and published on Read the Docs.
+Full API docs are built with Sphinx and published on [Read the Docs](https://parserf.readthedocs.io/).
 
 ## Credits
 
