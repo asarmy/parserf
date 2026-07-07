@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "parserf"
-version = "0.1.0"
+version = "1.0.0"
 description = "Parser for earthquake rupture forecasts like UCERF3 and 2023 NSHMP."
 authors = [
     { name = "Alex Sarmiento" , email = "asarmy@ucla.edu" }
 ]
 readme = "README.md"
-license = { text = "MIT" }
+license = { text = "Apache-2.0" }
 keywords = ["ERF", "earthquake rupture forecast", "UCERF3", "NSHM", "seismic hazard"]
 requires-python = ">=3.12"
 dependencies = [
@@ -31,12 +31,12 @@ examples = [
 
 [dependency-groups]
 dev = [
-    "black>=25.12.0",
-    "pdoc>=16.0.0",
+    "coverage-badge",
     "pre-commit>=4.5.1",
     "pytest>=9.0.2",
     "pytest-cov",
     "ruff>=0.14.10",
+    "setuptools<81",  # coverage-badge relies on pkg_resources, removed by default in setuptools 81+
 ]
 docs = [
     "myst-nb",
@@ -55,9 +55,6 @@ namespaces = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-markers = [
-    "slow: tests that load full fault model datasets",
-]
 
 [tool.coverage.run]
 relative_files = true
@@ -68,3 +65,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[project.urls]
+repository = "https://github.com/asarmy/parserf"
+documentation = "https://parserf.readthedocs.io/"

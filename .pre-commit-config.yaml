@@ -15,9 +15,9 @@ repos:
 
   - repo: local
     hooks:
-      - id: pytest-check
-        name: pytest-check
-        entry: uv run pytest -m "not slow"
+      - id: coverage-badge
+        name: coverage-badge
+        entry: bash -c 'uv run pytest --cov=parserf --cov-report=term-missing && uv run coverage-badge -f -o coverage.svg && git add coverage.svg'
         language: system
         always_run: true
-        files: ^test_
+        pass_filenames: false

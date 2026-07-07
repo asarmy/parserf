@@ -5,7 +5,6 @@ from types import SimpleNamespace
 import geopandas as gpd
 import pandas as pd
 import pyproj
-import pytest
 from shapely.geometry import LineString
 
 from parserf._utils import _subsection_geometry_3d
@@ -17,7 +16,6 @@ from parserf.queries import (
 )
 
 
-@pytest.mark.slow
 class TestSpatialQueries:
     def test_get_nearest_subsection_index_known_result(self, dataset_31):
         """A coordinate on a subsection's own trace should resolve to that subsection.

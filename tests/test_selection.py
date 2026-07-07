@@ -11,7 +11,6 @@ def selection(dataset_31):
     return ParentSelection(dataset_31, [1, 2])
 
 
-@pytest.mark.slow
 class TestParentSelection:
     def test_invalid_parent_id_raises(self, dataset_31):
         with pytest.raises(ValueError, match="No parent fault with id"):
@@ -40,7 +39,6 @@ class TestParentSelection:
         assert found, "Expected at least one rupture with a non-selected parent"
 
 
-@pytest.mark.slow
 class TestGridSelection:
     def test_all_points_within_radius(self, dataset_31):
         dist_km = 50

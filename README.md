@@ -1,5 +1,7 @@
 # parserf
 
+![coverage](https://raw.githubusercontent.com/asarmy/parserf/main/coverage.svg)
+
 **parserf** parses Earthquake Rupture Forecast (ERF) datasets into clean, structured Python
 objects — fault subsections, rupture scenarios, parent faults, and background seismicity. It loads
 and caches the raw USGS GeoJSON/CSV source files once and exposes enriched, ready-to-use tables and
@@ -99,7 +101,7 @@ idx = get_nearest_subsection_index(ds, lat=35.77, lon=-117.60)
 nearby_subs = get_subsections_list(ds, lat=35.77, lon=-117.60, dist_km=50.0)
 parent_ids  = get_parents_list(ds, lat=35.77, lon=-117.60, dist_km=50.0)
 
-# What are all the rupture scenarios that the closest subsection participates in?
+# Can I get a list of all the rupture scenarios within a site radius?
 rups_near = get_ruptures_near(ds, lat=35.77, lon=-117.60, dist_km=50.0)
 ```
 
