@@ -8,7 +8,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 from pyproj import Geod
-from shapely import LineString, MultiLineString
+from shapely import LineString, MultiLineString, Polygon
 from shapely.ops import linemerge
 
 _GEOD = Geod(ellps="WGS84")
@@ -58,6 +58,68 @@ def _merge_geometry(parsed_indices, index_to_geom):
     return linemerge(MultiLineString(geoms))
 
 
+def _surface_from_trace(
+    coords, upper_depths, lower_depths, dips, dip_directions
+) -> Polygon | None:
+    """Build a dipping fault surface as a PolygonZ from a surface trace.
+
+    Each trace vertex is placed at its upper seismogenic depth to form the top edge, then offset
+    down-dip (geodesically, along the dip-direction azimuth) and dropped to the lower depth to form
+    the bottom edge. The top edge and reversed bottom edge are stitched into a single closed ring.
+
+    The down-dip horizontal offset is ``H = (lower - upper) / tan(dip)``; vertical faults
+    (dip within 1 degree of 90) use ``H = 0``. The surface is generally non-planar.
+
+    Args:
+        coords: Sequence of (lon, lat) surface-trace vertices.
+        upper_depths: Per-vertex upper seismogenic depth in km.
+        lower_depths: Per-vertex lower seismogenic depth in km.
+        dips: Per-vertex dip angle in degrees.
+        dip_directions: Per-vertex dip direction in degrees from north.
+
+    Returns:
+        A Shapely PolygonZ with (lon, lat, depth_km) coordinates (depth positive-down), or None if
+        fewer than two vertices are supplied.
+    """
+    coords = list(coords)
+    if len(coords) < 2:
+        return None
+    top = []
+    bottom = []
+    for (lon, lat), upper, lower, dip, dip_direction in zip(
+        coords, upper_depths, lower_depths, dips, dip_directions
+    ):
+        if np.isclose(dip, 90.0, atol=1.0):
+            offset_m = 0.0
+        else:
+            offset_m = (lower - upper) / np.tan(np.radians(dip)) * 1000.0
+        lon_b, lat_b, _ = _GEOD.fwd(lon, lat, dip_direction, offset_m)
+        top.append((lon, lat, upper))
+        bottom.append((lon_b, lat_b, lower))
+    return Polygon(top + bottom[::-1])
+
+
+def _subsection_geometry_3d(row) -> Polygon | None:
+    """Build a single subsection's dipping surface PolygonZ.
+
+    Args:
+        row: A subsection row with ``geometry`` (LineString), ``upper_depth_km``,
+            ``lower_depth_km``, ``dip``, and ``dip_direction``.
+
+    Returns:
+        A Shapely PolygonZ in (lon, lat, depth_km), or None for a degenerate trace.
+    """
+    coords = [(x, y) for x, y, *_ in row["geometry"].coords]
+    n = len(coords)
+    return _surface_from_trace(
+        coords,
+        [row["upper_depth_km"]] * n,
+        [row["lower_depth_km"]] * n,
+        [row["dip"]] * n,
+        [row["dip_direction"]] * n,
+    )
+
+
 def _cumulative_mfd(ruptures: pd.DataFrame) -> pd.DataFrame:
     """Compute cumulative magnitude frequency distribution from rupture data.
 
@@ -99,7 +161,7 @@ def _parent_area_pcts(
     total = sum(parent_areas.values())
     if total == 0:
         return []
-    return [(pid, area / total * 100.0) for pid, area in parent_areas.items()]
+    return [(int(pid), area / total * 100.0) for pid, area in parent_areas.items()]
 
 
 def _orient_trace(line: LineString, dip: float, dip_direction: float) -> LineString:
@@ -144,39 +206,71 @@ def _parent_surface_trace(
 
     Returns:
         LineString of the merged, oriented surface trace (right-hand rule).
+
+    Raises:
+        ValueError: If the subsections do not merge into a single contiguous trace.
     """
     merged = linemerge(MultiLineString(geometries))
+    if not isinstance(merged, LineString):
+        raise ValueError("Parent subsections do not merge into a single contiguous trace.")
     return _orient_trace(merged, dip, dip_direction)
 
 
-def _parent_style(rake_frequencies: pd.DataFrame, parent_id: int) -> str:
-    """Return the dominant faulting style for a parent fault.
+def _parent_geometry(subsections: pd.DataFrame) -> LineString:
+    """Build a parent fault's merged, oriented surface trace from its subsections.
+
+    The merged trace is oriented by the right-hand rule (dip direction to the right). An
+    area-weighted dip and dip direction are computed internally solely to drive that
+    orientation; they are an implementation detail and are not exposed as parent-level
+    aggregates.
 
     Args:
-        rake_frequencies: DataFrame with columns ``parent_id``, ``style``, ``count``.
-        parent_id: The parent fault integer ID.
+        subsections: DataFrame of child subsections with ``geometry``, ``dip``,
+            ``dip_direction``, and ``area_km2`` columns.
 
     Returns:
-        The most common faulting style by rupture count.
+        LineString of the merged, oriented surface trace (right-hand rule).
     """
-    parent_rakes = rake_frequencies.loc[rake_frequencies["parent_id"] == parent_id]
-    counts = parent_rakes.groupby("style")["count"].sum()
-    return counts.idxmax()
+    weights = subsections["area_km2"]
+    dip = (subsections["dip"] * weights).sum() / weights.sum()
+    dip_direction = (subsections["dip_direction"] * weights).sum() / weights.sum()
+    return _parent_surface_trace(subsections["geometry"].tolist(), dip, dip_direction)
 
 
-def _parent_style_counts(rake_frequencies: pd.DataFrame, parent_id: int) -> pd.DataFrame:
-    """Return faulting style breakdown for a parent fault, sorted descending by count.
+def _parent_geometry_3d(subsections: pd.DataFrame) -> Polygon:
+    """Build a parent fault's dipping surface as a single PolygonZ.
+
+    Reuses the merged, right-hand-rule oriented surface trace from :func:`_parent_geometry` to get
+    the globally ordered top-edge vertices, then offsets each vertex down-dip using that vertex's
+    own subsection ``dip``, ``dip_direction``, and depths (looked up by coordinate). Child
+    subsections of a parent are contiguous, so the result is a single hole-free PolygonZ.
 
     Args:
-        rake_frequencies: DataFrame with columns ``parent_id``, ``style``, ``count``.
-        parent_id: The parent fault integer ID.
+        subsections: DataFrame of child subsections with ``geometry``, ``dip``, ``dip_direction``,
+            ``upper_depth_km``, ``lower_depth_km``, and ``area_km2`` columns.
 
     Returns:
-        DataFrame with columns ``style`` and ``count``, sorted by count descending.
+        A Shapely PolygonZ in (lon, lat, depth_km).
+
+    Raises:
+        ValueError: If the subsections do not merge into a single contiguous trace.
     """
-    parent_rakes = rake_frequencies.loc[rake_frequencies["parent_id"] == parent_id]
-    counts = parent_rakes.groupby("style")["count"].sum().reset_index()
-    return counts.sort_values("count", ascending=False).reset_index(drop=True)
+    trace = _parent_geometry(subsections)
+    lookup: dict[tuple[float, float], tuple[float, float, float, float]] = {}
+    for _, sub in subsections.iterrows():
+        params = (
+            sub["upper_depth_km"],
+            sub["lower_depth_km"],
+            sub["dip"],
+            sub["dip_direction"],
+        )
+        for x, y, *_ in sub["geometry"].coords:
+            lookup[(round(x, 6), round(y, 6))] = params
+
+    coords = [(x, y) for x, y, *_ in trace.coords]
+    params_per_vertex = [lookup[(round(lon, 6), round(lat, 6))] for lon, lat in coords]
+    uppers, lowers, dips, dip_directions = zip(*params_per_vertex)
+    return _surface_from_trace(coords, uppers, lowers, dips, dip_directions)
 
 
 class _RuptureSet:
@@ -233,49 +327,41 @@ class _RuptureSet:
     def participating_ruptures(self) -> gpd.GeoDataFrame:
         """Filtered ruptures enriched with geometry and derived attributes.
 
-        Returns a GeoDataFrame (EPSG:4326) in exploded form: one row per (rupture, parent) pair.
-        The DataFrame index identifies the original rupture (duplicate index values indicate rows
-        from the same rupture). Columns include ``m``, ``rate``, ``depth``, ``dip``, ``width``,
-        ``rake``, ``geometry``, ``length_km``, ``area_km2``, ``parent_id``, and ``area_pct``.
+        Returns a GeoDataFrame (EPSG:4326) with one row per rupture, indexed by the rupture id.
+        Columns: ``m``, ``rate``, ``depth``, ``dip``, ``width``, ``rake``, ``geometry``,
+        ``length_km``, ``area_km2``, and ``contributions``.
 
-        The ``rate`` column is the full rupture rate; multiply by ``area_pct / 100`` to get the
-        parent-attributed rate.
+        ``contributions`` is the per-parent area breakdown: a list of ``(parent_id, area_pct)``
+        tuples covering every parent fault the rupture touches (not just parents matching the
+        target indices), so the percentages sum to 100 per rupture. ``rate`` is the full rupture
+        rate; a parent's attributed rate is ``rate * area_pct / 100``.
 
-        All parent contributions for each rupture are included, not just parents matching the
-        target indices. This preserves interpretable ``area_pct`` values that sum to 100 per
-        rupture. Filter on ``parent_id`` to isolate specific parents.
+        To get one row per (rupture, parent) — e.g. to attribute rates to individual faults —
+        explode the column::
+
+            e = rups.explode("contributions")
+            e[["parent_id", "area_pct"]] = pd.DataFrame(
+                e["contributions"].tolist(), index=e.index
+            )
         """
         df = self._filtered.copy()
         if df.empty:
+            columns = [
+                column
+                for column in self._dataset.ruptures.columns
+                if column not in {"indices", "parsed_indices"}
+            ]
+            columns.extend(["geometry", "length_km", "area_km2", "contributions"])
             return gpd.GeoDataFrame(
-                columns=[
-                    "m",
-                    "rate",
-                    "depth",
-                    "dip",
-                    "width",
-                    "rake",
-                    "geometry",
-                    "length_km",
-                    "area_km2",
-                    "parent_id",
-                    "area_pct",
-                ],
+                columns=columns,
                 geometry="geometry",
                 crs="EPSG:4326",
             )
         df["geometry"] = df["parsed_indices"].apply(self._geometry)
         df["length_km"] = df["parsed_indices"].apply(self._length_km)
         df["area_km2"] = df["parsed_indices"].apply(self._area_km2)
-        df["_pcts"] = df["parsed_indices"].apply(self._parent_area_pcts)
+        df["contributions"] = df["parsed_indices"].apply(self._parent_area_pcts)
         df = df.drop(columns=["parsed_indices", "indices"])
-        df = df.explode("_pcts", ignore_index=False)
-        df[["parent_id", "area_pct"]] = pd.DataFrame(
-            df["_pcts"].tolist(),
-            index=df.index,
-        )
-        df = df.drop(columns=["_pcts"])
-        df["parent_id"] = df["parent_id"].astype(int)
         return gpd.GeoDataFrame(df, geometry="geometry", crs="EPSG:4326")
 
     @cached_property
@@ -292,13 +378,14 @@ class _RuptureSet:
             subsection_indices: Subsection indices to compute MFDs for.
 
         Returns:
-            DataFrame with columns ``index``, ``magnitude``, and ``cumulative_rate``.
+            DataFrame with columns ``index``, ``magnitude``, and ``cumulative_rate``, ordered by
+            ascending subsection index.
         """
         filtered = self._filtered
         if filtered.empty:
             return pd.DataFrame(columns=["index", "magnitude", "cumulative_rate"])
         frames = []
-        for idx in subsection_indices:
+        for idx in sorted(subsection_indices):
             mask = filtered["parsed_indices"].apply(lambda s, i=idx: i in s)
             mfd = _cumulative_mfd(filtered.loc[mask])
             mfd.insert(0, "index", idx)

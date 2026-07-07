@@ -1,0 +1,13 @@
+recursive-exclude src/parserf/data *
+include src/parserf/data/DerivedData/nshm-conus-v6.0.0/parent_id.csv
+include src/parserf/data/RawData/nshm-conus-v6.0.0/sections.geojson
+include src/parserf/data/RawData/nshm-conus-v6.0.0/ruptures.csv
+include src/parserf/data/RawData/nshm-conus-v6.0.0/branch-avg-grid.csv
+include src/parserf/data/DerivedData/fault-model-3.1/parent_id.csv
+include src/parserf/data/RawData/fault-model-3.1/sections.geojson
+include src/parserf/data/RawData/fault-model-3.1/ruptures.csv
+include src/parserf/data/RawData/fault-model-3.1/ucerf3-fm-3.1.csv
+include src/parserf/data/DerivedData/fault-model-3.2/parent_id.csv
+include src/parserf/data/RawData/fault-model-3.2/sections.geojson
+include src/parserf/data/RawData/fault-model-3.2/ruptures.csv
+include src/parserf/data/RawData/fault-model-3.2/ucerf3-fm-3.2.csv

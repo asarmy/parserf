@@ -8,9 +8,8 @@ import geopandas as gpd
 import pandas as pd
 
 from parserf._utils import (
-    _parent_style,
-    _parent_style_counts,
-    _parent_surface_trace,
+    _parent_geometry,
+    _parent_geometry_3d,
     _RuptureSet,
 )
 from parserf.models import FaultModel, FaultModelDataset
@@ -28,6 +27,8 @@ class ParentFaultData:
         name: Parent fault name.
         parent_id: Integer ID of the parent fault.
         subsections: DataFrame of all child subsection attributes.
+        geometry: Merged, right-hand-rule oriented surface trace (Shapely LineString).
+        geometry_3d: Merged dipping fault surface (Shapely PolygonZ).
     """
 
     def __init__(self, dataset: FaultModelDataset, *, parent_id: int) -> None:
@@ -76,46 +77,39 @@ class ParentFaultData:
         return df[columns].rename_axis("index")
 
     @cached_property
-    def dip(self) -> int:
-        """Representative dip angle in degrees (area-weighted mean of subsections, rounded)."""
-        weights = self.subsections["area_km2"]
-        return int(round((self.subsections["dip"] * weights).sum() / weights.sum()))
-
-    @cached_property
-    def dip_direction(self) -> int:
-        """Representative dip direction in degrees (area-weighted mean of subsections, rounded)."""
-        weights = self.subsections["area_km2"]
-        return int(round((self.subsections["dip_direction"] * weights).sum() / weights.sum()))
-
-    @cached_property
-    def surface_trace(self):
+    def geometry(self):
         """Oriented 2D surface trace of the parent fault as a Shapely LineString.
 
-        Coordinates are oriented such that when walking along the fault trace, the dip direction is
-        to your right (right-hand rule). For vertical faults (dip ~ 90 degrees), the original order
-        is preserved.
+        Mirrors ``FaultSubsectionData.geometry``: the parent's coordinates as a single
+        LineString. The child subsection traces are merged and oriented such that, when walking
+        along the trace, the dip direction is to your right (right-hand rule). For vertical faults
+        (dip ~ 90 degrees), the original order is preserved.
+
+        Per-subsection scalars (dip, depths, areas, etc.) are not aggregated here; read them from
+        ``subsections`` and aggregate as needed.
 
         Returns:
             LineString of the merged, oriented surface trace (EPSG:4326).
         """
-        return _parent_surface_trace(
-            self.subsections["geometry"].tolist(),
-            self.dip,
-            self.dip_direction,
-        )
+        return _parent_geometry(self.subsections)
 
     @cached_property
-    def style_counts(self) -> pd.DataFrame:
-        """Faulting style breakdown by rupture count, sorted descending.
+    def geometry_3d(self):
+        """Merged dipping fault surface of the parent as a single Shapely PolygonZ.
 
-        Returns a DataFrame with columns ``style`` and ``count``.
+        The 3D counterpart to ``geometry``: the child subsection surfaces are stitched along the
+        merged, right-hand-rule oriented trace into a single closed PolygonZ. Each vertex is hung
+        down-dip from ``upper_depth_km`` to ``lower_depth_km`` using its own subsection's ``dip``
+        and ``dip_direction``. Coordinates are ``(lon, lat, depth_km)`` with depth positive-down.
+
+        Child subsections are contiguous, so this is always a single hole-free PolygonZ.
+        The surface is generally non-planar, so Shapely's 2D ``.area`` and ``.length`` are not
+        meaningful on it.
+
+        Returns:
+            Shapely PolygonZ of the merged dipping surface (EPSG:4326).
         """
-        return _parent_style_counts(self._dataset.rake_frequencies, self._parent_id)
-
-    @property
-    def style(self) -> str:
-        """The most common faulting style by rupture count."""
-        return _parent_style(self._dataset.rake_frequencies, self._parent_id)
+        return _parent_geometry_3d(self.subsections)
 
 
 class ParentFaultRuptures:
@@ -137,13 +131,11 @@ class ParentFaultRuptures:
     def participating_ruptures(self) -> gpd.GeoDataFrame:
         """GeoDataFrame of ruptures involving any child subsection of this parent fault.
 
-        Returns a GeoDataFrame (EPSG:4326) in exploded form: one row per (rupture, parent) pair
-        with ``parent_id`` and ``area_pct`` columns. The ``rate`` column is the full rupture rate;
-        multiply by ``area_pct / 100`` for the parent-attributed rate.
-
-        All parent contributions for each rupture are included, not just this parent fault. This
-        preserves interpretable ``area_pct`` values that sum to 100 per rupture. Filter on
-        ``parent_id`` to isolate this parent's rows.
+        Returns a GeoDataFrame (EPSG:4326) with one row per rupture, including a ``contributions``
+        column: a list of ``(parent_id, area_pct)`` tuples for every parent the rupture touches
+        (not just this one), summing to 100. ``rate`` is the full rupture rate, so a parent's
+        attributed rate is ``rate * area_pct / 100``. Call ``rups.explode("contributions")`` for
+        one row per (rupture, parent), then filter on ``parent_id`` to isolate this parent's rows.
         """
         return self._rupture_set.participating_ruptures
 
@@ -152,7 +144,7 @@ class ParentFaultRuptures:
         """Cumulative magnitude frequency distributions for all child subsections.
 
         Returns a DataFrame with columns ``index`` (subsection index), ``magnitude``, and
-        ``cumulative_rate``.
+        ``cumulative_rate``, ordered by ascending subsection index.
         """
         return self._rupture_set.per_subsection_mfds(self._subsection_indices)
 

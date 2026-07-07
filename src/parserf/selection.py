@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pyproj
 
-from parserf._utils import _parent_style, _parent_surface_trace, _RuptureSet
+from parserf._utils import _parent_geometry, _RuptureSet
 from parserf.models import FaultModelDataset
 
 
@@ -21,7 +21,8 @@ class ParentSelection:
 
     Args:
         dataset: The fault model dataset backing this view.
-        parent_ids: Ordered list of parent fault IDs to include.
+        parent_ids: Ordered list of parent fault IDs to include. Duplicates are de-duplicated,
+            preserving first-occurrence order.
 
     Raises:
         ValueError: If any parent fault ID is not found in the dataset.
@@ -42,6 +43,7 @@ class ParentSelection:
     def __init__(self, dataset: FaultModelDataset, parent_ids: list[int]) -> None:
         if not parent_ids:
             raise ValueError("parent_ids must not be empty")
+        parent_ids = list(dict.fromkeys(parent_ids))
         for pid in parent_ids:
             dataset._validate_parent_id(pid)
         self._dataset = dataset
@@ -64,27 +66,20 @@ class ParentSelection:
 
     @cached_property
     def parents(self) -> gpd.GeoDataFrame:
-        """Per-parent summary with faulting style and oriented surface trace.
+        """Per-parent summary with oriented surface trace.
 
         Returns a GeoDataFrame indexed by ``parent_id`` (in input order) with columns
-        ``parent_name``, ``style``, and ``geometry`` (oriented surface trace as LineString,
-        EPSG:4326).
+        ``parent_name`` and ``geometry`` (oriented surface trace as LineString, EPSG:4326).
         """
         subs = self.subsections
-        rakes = self._dataset.rake_frequencies
 
         records = []
         for pid, group in subs.groupby("parent_id"):
-            weights = group["area_km2"]
-            dip = (group["dip"] * weights).sum() / weights.sum()
-            dip_dir = (group["dip_direction"] * weights).sum() / weights.sum()
-            style = _parent_style(rakes, pid)
-            trace = _parent_surface_trace(group["geometry"].tolist(), dip, dip_dir)
+            trace = _parent_geometry(group)
             records.append(
                 {
                     "parent_id": pid,
                     "parent_name": group["parent_name"].iloc[0],
-                    "style": style,
                     "geometry": trace,
                 }
             )
@@ -101,16 +96,13 @@ class ParentSelection:
     def ruptures(self) -> gpd.GeoDataFrame:
         """Enriched ruptures for all subsections of the selected parents.
 
-        Returns a GeoDataFrame (EPSG:4326) in exploded form: one row per (rupture, parent) pair.
-        The DataFrame index identifies the original rupture (duplicate index values indicate rows
-        from the same rupture). Columns include ``m``, ``rate``, ``geometry``, ``length_km``,
-        ``area_km2``, ``parent_id``, and ``area_pct``.
+        Returns a GeoDataFrame (EPSG:4326) with one row per rupture, indexed by rupture id.
+        Columns: ``m``, ``rate``, ``geometry``, ``length_km``, ``area_km2``, and ``contributions``
+        — a list of ``(parent_id, area_pct)`` tuples for every parent the rupture touches (not just
+        parents in the selection), summing to 100. ``rate`` is the full rupture rate, so a parent's
+        attributed rate is ``rate * area_pct / 100``.
 
-        The ``rate`` column is the full rupture rate; multiply by ``area_pct / 100`` to get the
-        parent-attributed rate.
-
-        All parent contributions for each rupture are included, not just parents in the selection.
-        This preserves interpretable ``area_pct`` values that sum to 100 per rupture. Filter on
+        Call ``rups.explode("contributions")`` for one row per (rupture, parent), then filter on
         ``parent_id`` to isolate specific parents.
         """
         return self._rupture_set.participating_ruptures

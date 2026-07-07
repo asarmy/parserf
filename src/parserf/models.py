@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pyproj
 
-from parserf._utils import _parse_indices
+from parserf._utils import _parse_indices, _subsection_geometry_3d
 
 
 class FaultModel(IntEnum):
@@ -48,24 +48,18 @@ class FaultModelDataset:
 
     Provides cached access to earthquake rupture forecast data files for different fault models
     including NSHMP 2023, UCERF3 v3.1, and UCERF3 v3.2. Handles file loading and provides
-    structured access to parent IDs, fault subsections, rupture scenarios, and faulting style
-    data.
+    structured access to parent IDs, fault subsections, and rupture scenarios.
 
     Args:
         model: The fault model version.
 
     Attributes:
         parent_ids: DataFrame with columns ``parent_id`` (int) and ``parent_name`` (str).
-        rake_frequencies: DataFrame of rake frequency counts per parent fault with columns
-            ``parent_id``, ``style``, and ``count``.
         subsections: DataFrame of fault subsections indexed by ``index`` (int) with columns for
             geometry, dimensions, and parent fault info.
         ruptures: Rupture data with parsed subsection indices as sets of integers.
         grid: DataFrame of background gridded seismicity with columns ``lon``, ``lat``, ``ss_wt``,
             ``r_wt``, ``n_wt``, and magnitude bin annual rates.
-
-    Methods:
-        get_parent_fault_id(name=...): Resolve a parent fault name to its integer ID.
 
     Examples:
         >>> from parserf.models import FaultModel, FaultModelDataset
@@ -95,11 +89,6 @@ class FaultModelDataset:
         return pd.read_csv(self._derived_data_path / "parent_id.csv")
 
     @cached_property
-    def rake_frequencies(self) -> pd.DataFrame:
-        """Load rake frequency counts for each parent fault in the selected model."""
-        return pd.read_csv(self._derived_data_path / "rake_frequencies.csv")
-
-    @cached_property
     def grid(self) -> pd.DataFrame:
         """Background gridded seismicity rates for the selected fault model."""
         return pd.read_csv(self._raw_data_path / _GRID_FILE_MAP[self.model])
@@ -116,7 +105,12 @@ class FaultModelDataset:
 
     @cached_property
     def ruptures(self) -> pd.DataFrame:
-        """Scenario ruptures with parsed subsection indices as integer sets."""
+        """Scenario ruptures with parsed subsection indices as integer sets.
+
+        Zero-rate ruptures are dropped. The DataFrame index preserves the row number from the
+        source ``ruptures.csv`` file, which serves as the rupture id; this means the index can have
+        gaps where zero-rate rows were removed.
+        """
         df = self._ruptures.copy()
         df = df[df["rate"] != 0]
         df["parsed_indices"] = df["indices"].apply(_parse_indices)
@@ -172,6 +166,18 @@ class FaultModelDataset:
         pid_to_name = self.parent_ids.set_index("parent_id")["parent_name"].to_dict()
         df["parent_name"] = df["parent_id"].map(pid_to_name)
         return df
+
+    @cached_property
+    def _subsection_footprints(self) -> gpd.GeoSeries:
+        """Map-view footprint (dipping surface projected to lon/lat) per subsection.
+
+        Built from the same dipping-surface geometry as ``FaultSubsectionData.geometry_3d`` (see
+        ``_subsection_geometry_3d``), but reduced to a 2D footprint for spatial-distance queries:
+        for a dipping fault, the footprint extends down-dip from the surface trace, so a site over
+        the hanging wall (but away from the trace) can still be directly over the fault.
+        """
+        geoms = self.subsections.apply(_subsection_geometry_3d, axis=1)
+        return gpd.GeoSeries(geoms, index=self.subsections.index, crs="EPSG:4326")
 
     def get_parent_fault_id(self, *, name: str) -> int:
         """Return the integer parent fault ID for a given parent fault name.

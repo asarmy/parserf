@@ -2,8 +2,9 @@
 
 import pandas as pd
 import pytest
+from shapely.geometry import LineString
 
-from parserf._utils import _cumulative_mfd, _parent_style, _parse_indices
+from parserf._utils import _cumulative_mfd, _parent_geometry, _parse_indices
 
 
 class TestCumulativeMfd:
@@ -34,13 +35,22 @@ class TestParseIndices:
         assert _parse_indices("0:2-5-10:12") == {0, 1, 2, 5, 10, 11, 12}
 
 
-class TestParentStyle:
-    def test_returns_dominant_style(self):
-        rakes = pd.DataFrame(
+class TestParentGeometry:
+    def test_disjoint_subsections_raise_clear_value_error(self):
+        subsections = pd.DataFrame(
             {
-                "parent_id": [1, 1, 1],
-                "style": ["Reverse", "Strike-Slip", "Reverse"],
-                "count": [50, 30, 20],
+                "geometry": [
+                    LineString([(0.0, 0.0), (1.0, 0.0)]),
+                    LineString([(2.0, 0.0), (3.0, 0.0)]),
+                ],
+                "dip": [60.0, 60.0],
+                "dip_direction": [90.0, 90.0],
+                "area_km2": [1.0, 1.0],
             }
         )
-        assert _parent_style(rakes, 1) == "Reverse"
+
+        with pytest.raises(
+            ValueError,
+            match="subsections do not merge into a single contiguous trace",
+        ):
+            _parent_geometry(subsections)

@@ -1,0 +1,21 @@
+/* Notebook (myst-nb) cell outputs: wide pandas DataFrame tables were being clipped by the
+   content column's right edge instead of scrolling. Make the output area and the table itself
+   horizontally scrollable, and tidy up the default pandas HTML repr styling to match the rest
+   of the theme. */
+div.cell_output {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+div.cell_output table.dataframe {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+    font-size: 90%;
+    white-space: nowrap;
+}
+
+div.cell_output table.dataframe th,
+div.cell_output table.dataframe td {
+    padding: 4px 8px;
+}

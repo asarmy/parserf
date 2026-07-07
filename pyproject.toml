@@ -3,19 +3,22 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "u3mfd"
+name = "parserf"
 version = "0.1.0"
-description = "Parser for UCERF3 fault model solutions and NSHMP seismic hazard data"
+description = "Parser for earthquake rupture forecasts like UCERF3 and 2023 NSHMP."
+authors = [
+    { name = "Alex Sarmiento" , email = "asarmy@ucla.edu" }
+]
 readme = "README.md"
+license = { text = "MIT" }
+keywords = ["ERF", "earthquake rupture forecast", "UCERF3", "NSHM", "seismic hazard"]
 requires-python = ">=3.12"
 dependencies = [
     "geopandas",
-    "matplotlib",
     "numpy>=2.4.0",
     "pandas",
     "pyarrow>=23.0.1",
     "pyproj",
-    "scipy",
     "shapely>=2.1.2",
 ]
 
@@ -23,6 +26,7 @@ dependencies = [
 examples = [
     "ipykernel>=7.2.0",
     "jupyterlab",
+    "matplotlib",
 ]
 
 [dependency-groups]
@@ -34,6 +38,11 @@ dev = [
     "pytest-cov",
     "ruff>=0.14.10",
 ]
+docs = [
+    "myst-nb",
+    "renku-sphinx-theme",
+    "sphinx",
+]
 
 [tool.setuptools]
 include-package-data = true
@@ -41,10 +50,14 @@ package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+namespaces = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "slow: tests that load full fault model datasets",
+]
 
 [tool.coverage.run]
 relative_files = true
@@ -52,7 +65,6 @@ relative_files = true
 [tool.ruff]
 line-length = 99
 target-version = "py312"
-exclude = ["scratch.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]

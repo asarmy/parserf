@@ -7,7 +7,7 @@ from functools import cached_property
 import geopandas as gpd
 import pandas as pd
 
-from parserf._utils import _RuptureSet
+from parserf._utils import _RuptureSet, _subsection_geometry_3d
 from parserf.models import FaultModel, FaultModelDataset
 
 
@@ -32,6 +32,7 @@ class FaultSubsectionData:
         dip_direction: Dip direction in degrees.
         aseismicity: Aseismicity factor (0 to 1).
         geometry: Shapely LineString of the surface trace (EPSG:4326).
+        geometry_3d: Shapely PolygonZ of the dipping fault surface (EPSG:4326).
         length_km: Geodesic length of the surface trace in km.
         width_km: Down-dip width in km.
         area_km2: Fault area in km².
@@ -98,6 +99,23 @@ class FaultSubsectionData:
         """Shapely LineString of the surface trace (EPSG:4326)."""
         return self._row["geometry"]
 
+    @cached_property
+    def geometry_3d(self):
+        """Shapely PolygonZ of the dipping fault surface (EPSG:4326).
+
+        The surface trace is hung down-dip to its lower seismogenic depth: each trace vertex forms
+        the top edge at ``upper_depth_km``, offset down-dip (geodesically, along ``dip_direction``)
+        and dropped to ``lower_depth_km`` for the bottom edge. Coordinates are
+        ``(lon, lat, depth_km)`` with depth positive-down.
+
+        The surface is generally non-planar (the trace may bend), so Shapely's 2D ``.area`` and
+        ``.length`` are not meaningful on it; use ``area_km2`` and ``length_km`` instead.
+
+        Returns:
+            Shapely PolygonZ of the dipping surface (EPSG:4326).
+        """
+        return _subsection_geometry_3d(self._row)
+
     @property
     def length_km(self) -> float:
         """Geodesic length of the surface trace in kilometers."""
@@ -142,13 +160,11 @@ class FaultSubsectionRuptures:
     def participating_ruptures(self) -> gpd.GeoDataFrame:
         """GeoDataFrame of ruptures involving this subsection.
 
-        Returns a GeoDataFrame (EPSG:4326) in exploded form: one row per (rupture, parent) pair
-        with ``parent_id`` and ``area_pct`` columns, plus merged geometry, ``length_km``, and
-        ``area_km2``. The ``rate`` column is the full rupture rate; multiply by ``area_pct / 100``
-        for the parent-attributed rate.
-
-        All parent contributions for each rupture are included, not just the queried subsection's
-        parent. This preserves interpretable ``area_pct`` values that sum to 100 per rupture.
+        Returns a GeoDataFrame (EPSG:4326) with one row per rupture, plus merged ``geometry``,
+        ``length_km``, ``area_km2``, and a ``contributions`` column. ``contributions`` is a list of
+        ``(parent_id, area_pct)`` tuples for every parent the rupture touches (summing to 100);
+        ``rate`` is the full rupture rate, so attributed rate is ``rate * area_pct / 100``. Call
+        ``rups.explode("contributions")`` for one row per (rupture, parent).
         """
         return self._rupture_set.participating_ruptures
 
@@ -180,8 +196,13 @@ class FaultSubsection:
     def __init__(self, dataset: FaultModelDataset, *, index: int) -> None:
         dataset._validate_index(index)
         self._dataset = dataset
-        self.index = index
+        self._index = index
         self._name = dataset.subsections.loc[index, "name"]
+
+    @property
+    def index(self) -> int:
+        """Subsection index."""
+        return self._index
 
     def __repr__(self) -> str:
         return (

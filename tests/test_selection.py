@@ -28,14 +28,14 @@ class TestParentSelection:
         """Ruptures should include all parent contributions, not just selected parents."""
         rups = selection.ruptures
         selected = {1, 2}
-        # Find a rupture group that includes a non-selected parent
-        grouped = rups.groupby(rups.index)
+        # Find a rupture whose contributions include a non-selected parent
         found = False
-        for rup_id, group in grouped:
-            parent_ids = set(group["parent_id"])
+        for contributions in rups["contributions"]:
+            parent_ids = {pid for pid, _ in contributions}
             if not parent_ids.issubset(selected):
                 found = True
-                assert pytest.approx(group["area_pct"].sum(), abs=0.01) == 100.0
+                total = sum(area_pct for _, area_pct in contributions)
+                assert pytest.approx(total, abs=0.01) == 100.0
                 break
         assert found, "Expected at least one rupture with a non-selected parent"
 

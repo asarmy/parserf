@@ -1,5 +1,6 @@
 """Tests for ParentFault, ParentFaultData, and ParentFaultRuptures."""
 
+import pandas as pd
 import pytest
 from pyproj import Geod
 
@@ -15,48 +16,39 @@ def parent_fault(dataset_31):
 class TestParentFaultData:
     """Specific tests for Compton fault in UCERF3.1."""
 
-    def test_parent_id(self, parent_fault):
-        assert parent_fault.data.parent_id == 43
-
-    def test_style_known_result(self, parent_fault):
-        assert parent_fault.data.style == "reverse"
-
-    def test_dip(self, parent_fault):
-        assert parent_fault.data.dip == 20
-        assert isinstance(parent_fault.data.dip, int)
-
-    def test_subsection_indices(self, parent_fault):
-        assert set(parent_fault.data.subsections.index) == {341, 342, 343, 344, 345}
-
-    def test_surface_trace_orientation(self, parent_fault):
-        """Dip is to the right, so trace should run south-to-north (first lat < last lat)."""
-        trace = parent_fault.data.surface_trace
-        coords = trace.coords
-        assert coords[0][1] < coords[-1][1]
-
-    def test_surface_trace_right_hand_rule(self, parent_fault):
+    def test_geometry_right_hand_rule(self, parent_fault):
         """Forward azimuth of trace should be within 90 degrees of (dip_direction - 90)."""
-        trace = parent_fault.data.surface_trace
-        coords = trace.coords
+        coords = parent_fault.data.geometry.coords
+        subs = parent_fault.data.subsections
+        weights = subs["area_km2"]
+        dip_direction = (subs["dip_direction"] * weights).sum() / weights.sum()
         geod = Geod(ellps="WGS84")
         az_trace, _, _ = geod.inv(coords[0][0], coords[0][1], coords[-1][0], coords[-1][1])
-        az_expected = (parent_fault.data.dip_direction - 90) % 360
+        az_expected = (dip_direction - 90) % 360
         diff = ((az_trace - az_expected + 180) % 360) - 180
         assert abs(diff) <= 90
 
 
 class TestParentFaultRuptures:
     def test_participating_ruptures_area_pcts_sum_to_100(self, parent_fault):
+        """Each rupture's per-parent contributions cover 100% of its area."""
         rups = parent_fault.ruptures.participating_ruptures
-        per_rupture = rups.groupby(rups.index)["area_pct"].sum()
-        for total in per_rupture:
+        for contributions in rups["contributions"]:
+            total = sum(area_pct for _, area_pct in contributions)
             assert pytest.approx(total, abs=0.01) == 100.0
 
-    def test_cumulative_mfds_indices_match_subsections(self, parent_fault):
-        """MFD indices should match the parent fault's subsection indices."""
-        mfd_indices = set(parent_fault.ruptures.cumulative_mfds["index"].unique())
-        sub_indices = set(parent_fault.data.subsections.index)
-        assert mfd_indices == sub_indices
+    def test_explode_contributions_recipe(self, parent_fault):
+        """The documented explode recipe yields one row per (rupture, parent), pcts sum to 100."""
+        rups = parent_fault.ruptures.participating_ruptures
+        exploded = rups.explode("contributions")
+        exploded[["parent_id", "area_pct"]] = pd.DataFrame(
+            exploded["contributions"].tolist(), index=exploded.index
+        )
+        # One exploded row per (rupture, parent) contribution.
+        assert len(exploded) == sum(len(c) for c in rups["contributions"])
+        # area_pct still sums to 100 per rupture once flattened.
+        per_rupture = exploded.groupby(exploded.index)["area_pct"].sum()
+        assert (per_rupture - 100.0).abs().max() < 0.01
 
     def test_mfd_consistent_with_subsection_api(self, parent_fault, dataset_31):
         """Per-subsection MFD from ParentFault should match FaultSubsection API."""
@@ -67,3 +59,25 @@ class TestParentFaultRuptures:
         assert list(parent_mfd["cumulative_rate"]) == pytest.approx(
             list(sub_mfd["cumulative_rate"])
         )
+
+
+class TestParentGeometry3d:
+    def test_single_polygon_z_no_holes(self, parent_fault):
+        poly = parent_fault.data.geometry_3d
+        assert poly.geom_type == "Polygon"
+        assert poly.has_z
+        assert len(list(poly.interiors)) == 0
+
+    def test_depth_range_spans_subsections(self, parent_fault):
+        """PolygonZ depths span the child subsections' upper..lower depth range."""
+        subs = parent_fault.data.subsections
+        zs = [z for *_, z in parent_fault.data.geometry_3d.exterior.coords]
+        assert min(zs) == pytest.approx(subs["upper_depth_km"].min())
+        assert max(zs) == pytest.approx(subs["lower_depth_km"].max())
+
+    def test_top_edge_matches_2d_trace(self, parent_fault):
+        """The top half of the ring reproduces the oriented 2D surface trace vertices."""
+        trace_coords = [(x, y) for x, y, *_ in parent_fault.data.geometry.coords]
+        ring = list(parent_fault.data.geometry_3d.exterior.coords)
+        top = [(x, y) for x, y, _ in ring[: len(trace_coords)]]
+        assert top == pytest.approx(trace_coords)
