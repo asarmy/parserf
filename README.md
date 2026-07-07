@@ -119,7 +119,7 @@ sub.data.geometry_3d       # shapely PolygonZ of the dipping surface (lon, lat, 
 
 # .ruptures — participation + MFD
 rups = sub.ruptures.participating_ruptures   # one row per rupture; .contributions = per-parent breakdown
-mfd  = sub.ruptures.cumulative_mfd           # columns: magnitude, cumulative_rate
+cmfd  = sub.ruptures.cumulative_mfd           # columns: magnitude, cumulative_rate
 ```
 
 ### 4. Look at one parent fault
@@ -206,14 +206,7 @@ use `.explode("contributions")`, then attribute rates with `rate * area_pct / 10
 
 ## Documentation
 
-Full API docs are built with Sphinx (Renku theme) and published on Read the Docs. To build them
-locally, install the `docs` dependency group and run:
-
-```bash
-uv run --group docs sphinx-build -b html docs docs/_build/html
-```
-
-Then open `docs/_build/html/index.html`.
+Full API docs are built with Sphinx and published on Read the Docs.
 
 ## Credits
 
