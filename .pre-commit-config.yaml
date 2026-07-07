@@ -19,5 +19,5 @@ repos:
         name: coverage-badge
         entry: bash -c 'uv run pytest --cov=parserf --cov-report=term-missing && uv run coverage-badge -f -o coverage.svg && git add coverage.svg'
         language: system
-        always_run: true
+        files: ^(src/|tests/)
         pass_filenames: false
