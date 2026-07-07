@@ -6,6 +6,7 @@
 [![CI](https://github.com/asarmy/parserf/actions/workflows/CI.yml/badge.svg)](https://github.com/asarmy/parserf/actions/workflows/CI.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 ![Coverage](https://raw.githubusercontent.com/asarmy/parserf/main/coverage.svg)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21246764.svg)](https://doi.org/10.5281/zenodo.21246764)
 
 **parserf** parses Earthquake Rupture Forecast (ERF) datasets into clean, structured Python
 objects — fault subsections, rupture scenarios, parent faults, and background seismicity. It loads
@@ -218,3 +219,5 @@ Full API docs are built with Sphinx and published on [Read the Docs](https://par
 ## Credits
 
 Portions of this code were generated or refined with the assistance of AI tools. The concept and code architecture/design are the original work of the author.
+
+If you use this software, please cite it using the [DOI](https://doi.org/10.5281/zenodo.21246764).
