@@ -3,6 +3,7 @@ repos:
     rev: v6.0.0
     hooks:
       - id: check-yaml
+        exclude: ^conda-recipe/meta\.yaml$ # Jinja-templated conda-build recipe, not plain YAML
       - id: end-of-file-fixer
       - id: trailing-whitespace
 

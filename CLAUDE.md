@@ -100,3 +100,30 @@ Badges in `README.md` (PyPI version, downloads, CI, docs, coverage) only render 
 preconditions exist: first PyPI publish, first CI run, an RTD build, and — for the coverage
 badge — the repo being public (private repos can't serve `raw.githubusercontent.com` images
 through GitHub's image proxy, so `coverage.svg` embeds are broken while the repo is private).
+
+## Publishing to conda-forge
+
+`conda-recipe/meta.yaml` in this repo is a **vendored reference copy**, generated with
+`grayskull pypi parserf` (installed via `uv tool install grayskull`) against the published PyPI
+sdist. It is not built from here — conda-forge builds are driven entirely by the
+`parserf-feedstock` repo (created by conda-forge once the initial recipe PR merges), which is the
+canonical source of truth for the recipe going forward. Update this vendored copy manually if the
+feedstock recipe changes materially (e.g. new dependency), so it doesn't drift.
+
+There is no separate release trigger for conda-forge — it chains off the existing PyPI release
+above:
+
+1. **One-time onboarding** (already done for `parserf`): fork `conda-forge/staged-recipes`, add
+   the grayskull-generated recipe under `recipes/parserf/`, open a PR. Once conda-forge reviewers
+   merge it, the `parserf-feedstock` repo and CI are created automatically, and the first build
+   publishes to the `conda-forge` channel.
+2. **Every subsequent PyPI release** (via the procedure above) is picked up automatically by
+   `regro-cf-autotick-bot`, which opens a version-bump PR against the feedstock.
+3. **`bot: automerge: true`** is set in the feedstock's `conda-forge.yml`, so pure version-bump
+   PRs (no dependency changes) merge on their own once feedstock CI passes. PRs that change
+   `requirements` still wait for manual review/merge.
+
+The recipe's `test` step does more than `import parserf` — it instantiates a
+`FaultModelDataset(FaultModel.UCERF3_31)` and asserts `subsections`/`ruptures` are non-empty, to
+positively confirm the `MANIFEST.in`-whitelisted data files actually land inside the conda
+package (not just that the module imports).
