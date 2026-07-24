@@ -1688,7 +1688,7 @@ requires-dist = [
     { name = "ipykernel", marker = "extra == 'examples'", specifier = ">=7.2.0" },
     { name = "jupyterlab", marker = "extra == 'examples'" },
     { name = "matplotlib", marker = "extra == 'examples'" },
-    { name = "numpy", specifier = ">=2.4.0" },
+    { name = "numpy", specifier = ">=1.26" },
     { name = "pandas" },
     { name = "pyarrow", specifier = ">=23.0.1" },
     { name = "pyproj" },

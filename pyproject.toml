@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "parserf"
-version = "1.0.0"
+version = "1.0.1"
 description = "Parser for earthquake rupture forecasts like UCERF3 and 2023 NSHMP."
 authors = [
     { name = "Alex Sarmiento" , email = "asarmy@ucla.edu" }
@@ -15,7 +15,7 @@ keywords = ["ERF", "earthquake rupture forecast", "UCERF3", "NSHM", "seismic haz
 requires-python = ">=3.12"
 dependencies = [
     "geopandas",
-    "numpy>=2.4.0",
+    "numpy>=1.26",
     "pandas",
     "pyarrow>=23.0.1",
     "pyproj",
