@@ -103,12 +103,15 @@ through GitHub's image proxy, so `coverage.svg` embeds are broken while the repo
 
 ## Publishing to conda-forge
 
-`conda-recipe/meta.yaml` in this repo is a **vendored reference copy**, generated with
-`grayskull pypi parserf` (installed via `uv tool install grayskull`) against the published PyPI
-sdist. It is not built from here — conda-forge builds are driven entirely by the
-`parserf-feedstock` repo (created by conda-forge once the initial recipe PR merges), which is the
-canonical source of truth for the recipe going forward. Update this vendored copy manually if the
-feedstock recipe changes materially (e.g. new dependency), so it doesn't drift.
+`conda-recipe/recipe.yaml` in this repo is a **vendored reference copy**, in conda-forge's
+recipe **v1 format** (rattler-build), generated with `grayskull pypi --use-v1-format parserf`
+against the published PyPI sdist. Generating v1 recipes requires `conda-recipe-manager` alongside
+grayskull (`conda install -c conda-forge grayskull conda-recipe-manager`; it's not on PyPI, so
+`uv tool install` alone isn't enough). It is not built from here — conda-forge builds are driven
+entirely by the `parserf-feedstock` repo (created by conda-forge once the initial recipe PR
+merges), which is the canonical source of truth for the recipe going forward. Update this
+vendored copy manually if the feedstock recipe changes materially (e.g. new dependency), so it
+doesn't drift.
 
 There is no separate release trigger for conda-forge — it chains off the existing PyPI release
 above:
@@ -116,7 +119,9 @@ above:
 1. **One-time onboarding** (already done for `parserf`): fork `conda-forge/staged-recipes`, add
    the grayskull-generated recipe under `recipes/parserf/`, open a PR. Once conda-forge reviewers
    merge it, the `parserf-feedstock` repo and CI are created automatically, and the first build
-   publishes to the `conda-forge` channel.
+   publishes to the `conda-forge` channel. (The initial submission started as a classic `meta.yaml`;
+   a reviewer requested converting to the v1 `recipe.yaml` format, which is now conda-forge's
+   recommended format for new `noarch: python` recipes.)
 2. **Every subsequent PyPI release** (via the procedure above) is picked up automatically by
    `regro-cf-autotick-bot`, which opens a version-bump PR against the feedstock.
 3. **`bot: automerge: true`** is set in the feedstock's `conda-forge.yml`, so pure version-bump
