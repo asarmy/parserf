@@ -43,8 +43,7 @@ In a `uv` project, you can add the package with:
 uv add parserf
 ```
 
-`parserf` is also submitted to [conda-forge](https://conda-forge.org/); once the feedstock build
-is live, it will be installable with:
+`parserf` also available via [conda-forge](https://conda-forge.org/):
 
 ```bash
 conda install -c conda-forge parserf
